@@ -125,15 +125,32 @@ export default {
   axios.post('/api/auth/yandex', { token: token })
     .then(response => {
       console.log('Ответ от бекенда:', response.data);
-
+      // Извлекаем данные пользователя
+      const user = response.data.user;
+      const user_id = user.id; // Извлекаем user_id
       // Сохраняем токен и данные пользователя в localStorage
-      localStorage.setItem('access_token', response.data.user.access_token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+       // Проверки
+        if (!user) {
+          throw new Error('Данные пользователя не найдены в ответе Яндекса');
+        }
+
+        const user_name = user.login;
+
+        if (!user_name) {
+          throw new Error('Логин пользователя не найден в ответе Яндекса');
+        }
+
+        // Сохраняем данные
+       localStorage.setItem('access_token', token);
+      localStorage.setItem('user_name', user_name);
+      localStorage.setItem('user_id', user_id);
 
       // Закрываем окно только после успешного завершения
       if (window.opener) {
         window.opener.postMessage({ type: 'yandexAuthSuccess', token: response.data.user.access_token }, '*');
         window.close();
+        // Отправляем событие
+        this.$root.$eventBus.dispatchEvent(new CustomEvent('login-success'));
       } else {
         this.$router.push({ name: 'Main' });
       }
@@ -164,7 +181,9 @@ export default {
           this.message = 'Вход выполнен успешно!';
           this.showMessage = true;
           this.resetForm();
-          this.$router.push({ name: 'Books' });
+          // Отправляем событие
+          this.$root.$eventBus.dispatchEvent(new CustomEvent('login-success'));
+          this.$router.push({ name: 'Main' });
         })
         .catch((error) => {
           console.error(error);
@@ -201,20 +220,19 @@ export default {
 
   beforeRouteEnter(to, from, next) {
   const token = localStorage.getItem('access_token');
-  const user = localStorage.getItem('user');
+  const user_id = localStorage.getItem('user_id');
 
   console.log('Токен в localStorage:', token);
-  console.log('Данные пользователя в localStorage:', user);
+  console.log('Данные пользователя в localStorage:', user_id);
 
-  // Исключение для страницы логина
-  if (to.name === 'Login') {
-    console.log('Переход на страницу логина');
-    next();
-  } else if (user && to.name !== 'Main') {
-    console.log('Перенаправление на /Main');
+  if (to.name === 'Login' && token) {
+    // Если пользователь уже авторизован и пытается зайти на страницу логина
     next({ name: 'Main' });
+  } else if (!token && to.name !== 'Login') {
+    // Если пользователь не авторизован и пытается зайти на другую страницу
+    next({ name: 'Login' });
   } else {
-    console.log('Переход на текущий маршрут');
+    // В остальных случаях разрешаем переход
     next();
   }
 },

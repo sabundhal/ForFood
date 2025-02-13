@@ -4,7 +4,7 @@
       <div class="col-sm-10">
         <h1>Регистрация</h1>
         <hr><br><br>
-        <alert :message=message v-if="showMessage"></alert>
+        <alert :message="message" v-if="showMessage"></alert>
         <form>
           <div class="mb-3">
             <label for="registerUsername" class="form-label">Имя пользователя:</label>
@@ -13,7 +13,8 @@
               class="form-control"
               id="registerUsername"
               v-model="registerForm.username"
-              placeholder="Введите имя пользователя">
+              placeholder="Введите имя пользователя"
+            />
           </div>
           <div class="mb-3">
             <label for="registerEmail" class="form-label">Email:</label>
@@ -22,7 +23,8 @@
               class="form-control"
               id="registerEmail"
               v-model="registerForm.email"
-              placeholder="Введите email">
+              placeholder="Введите email"
+            />
           </div>
           <div class="mb-3">
             <label for="registerPassword" class="form-label">Пароль:</label>
@@ -31,7 +33,8 @@
               class="form-control"
               id="registerPassword"
               v-model="registerForm.password"
-              placeholder="Введите пароль">
+              placeholder="Введите пароль"
+            />
           </div>
           <div class="mb-3">
             <label for="registerConfirmPassword" class="form-label">Подтвердите пароль:</label>
@@ -40,24 +43,26 @@
               class="form-control"
               id="registerConfirmPassword"
               v-model="registerForm.confirmPassword"
-              placeholder="Подтвердите пароль">
+              placeholder="Подтвердите пароль"
+            />
           </div>
           <div class="btn-group" role="group">
             <button
               type="button"
               class="btn btn-primary btn-sm"
-              @click="handleRegisterSubmit">
+              @click="handleRegisterSubmit"
+            >
               Зарегистрироваться
             </button>
             <button
               type="button"
               class="btn btn-danger btn-sm"
-              @click="handleRegisterCancel">
+              @click="handleRegisterCancel"
+            >
               Отмена
             </button>
           </div>
-          <p class="mt-3"> Если вы уже зарегестрированы <router-link to="/login">Войдите</router-link></p>
-
+          <p class="mt-3">Если вы уже зарегистрированы <router-link to="/login">Войдите</router-link></p>
         </form>
       </div>
     </div>
@@ -66,9 +71,8 @@
 
 <script>
 import axios from 'axios';
-import router from '@/router'; 
+import router from '@/router';
 import Alert from './Alert.vue';
-import config from '../config';
 
 export default {
   data() {
@@ -89,12 +93,13 @@ export default {
   methods: {
     registerUser(payload) {
       const path = `/api/register`;
-      axios.post(path, payload)
+      axios
+        .post(path, payload)
         .then(() => {
           this.message = 'Пользователь зарегистрирован!';
           this.showMessage = true;
           this.resetForm();
-          router.push({ name: 'Login' }); 
+          router.push({ name: 'Login' });
         })
         .catch((error) => {
           console.error(error);
@@ -120,14 +125,6 @@ export default {
       this.registerForm.password = '';
       this.registerForm.confirmPassword = '';
     },
-  },
-    beforeRouteEnter(to, from, next) {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      router.push({ name: 'Books' }); 
-    } else {
-      next(); 
-    }
   },
 };
 </script>

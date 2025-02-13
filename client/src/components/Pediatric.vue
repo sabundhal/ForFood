@@ -1,4 +1,13 @@
 <template>
+<div class="row">
+   <div class="col-md-8"></div>
+   <div class="col-md-4">
+          <router-link v-if="!token" class="btn btn-primary btn-sm" to="/login">Вход</router-link>
+          <router-link v-if="!token" class="btn btn-success btn-sm ml-2" to="/register">Регистрация</router-link>
+          <span v-else class="mr-2">Привет, {{ username }}</span>
+          <button v-if="token" @click="logout" class="btn btn-danger btn-sm">Выход</button>
+  </div>
+  </div>
   <div id="calculator">
     <div class="title__section">
       <div class="title__section__image title__section-item">
@@ -130,7 +139,14 @@ export default {
       warningMessage: "",
       weightBorder: "1px solid #cacaca",
       drugBorder: "1px solid #cacaca",
+      token: localStorage.getItem('access_token') || '', // Токен авторизации
+      username: '', // Имя пользователя
     };
+  },
+  created() {
+    // Загружаем данные при создании компонента
+    this.loadDrugs();
+    this.username = localStorage.getItem('user_name') || ''; // Загружаем username из localStorage
   },
   methods: {
     calculateDosage() {
@@ -249,10 +265,14 @@ export default {
         });
     },
   },
-  created() {
-    // Загружаем данные при создании компонента
-    this.loadDrugs();
-  },
+  logout() {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user_name');
+      localStorage.removeItem('user_id');
+      this.token = ''; // Очищаем токен
+      this.username = ''; // Очищаем username
+      this.$router.push('/login'); // Перенаправляем на страницу входа
+    }
 
 };
 

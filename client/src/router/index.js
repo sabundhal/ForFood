@@ -2,12 +2,11 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Books from '../components/Books.vue';
 import Register from '../components/Register.vue';
 import Login from '../components/Login.vue';
-import K8sLog from '../components/K8sLog.vue';
-import Account from '../components/Account.vue';
 import Main from '../components/Main.vue';
 import Pediatric from '../components/Pediatric.vue';
 import CalculationHistory from '../components/CalculationHistory.vue';
 import TokenHandler from '../components/TokenHandler.vue';
+import AuthButtons from '../components/AuthButtons.vue';
 
 const routes = [
   {
@@ -38,16 +37,6 @@ const routes = [
     path: '/main',
     name: 'Main',
     component: Main,
-  },
-  {
-    path: '/k8sLog',
-    name: 'K8sLog',
-    component: K8sLog,
-  },
-  {
-    path: '/account',
-    name: 'Account',
-    component: Account,
   },
   {
     path: '/calculationhistory',

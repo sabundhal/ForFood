@@ -235,7 +235,8 @@ export default {
   methods: {
     logout() {
       localStorage.removeItem('access_token');
-      localStorage.removeItem('username');
+      localStorage.removeItem('user_name');
+      localStorage.removeItem('user_id');
       this.token = '';
       this.username = '';
       this.books = []

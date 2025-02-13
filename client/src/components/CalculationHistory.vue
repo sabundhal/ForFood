@@ -1,4 +1,15 @@
 <template>
+
+   <div class="row">
+   <div class="col-md-8"></div>
+   <div class="col-md-4">
+          <router-link v-if="!token" class="btn btn-primary btn-sm" to="/login">Вход</router-link>
+          <router-link v-if="!token" class="btn btn-success btn-sm ml-2" to="/register">Регистрация</router-link>
+          <span v-else class="mr-2">Привет, {{ username }}</span>
+          <button v-if="token" @click="logout" class="btn btn-danger btn-sm">Выход</button>
+  </div>
+  </div>
+
   <div class="history">
     <!-- Поля для фильтрации -->
     <div class="filters">
@@ -59,7 +70,7 @@
   </div>
 </template>
 
-<<script>
+<script>
 import axios from 'axios';
 
 export default {
@@ -70,7 +81,12 @@ export default {
       dateFrom: "",          // Дата "с"
       dateTo: "",            // Дата "по"
       history: [],           // История расчётов
+      token: localStorage.getItem('access_token') || '', // Токен авторизации
+      username: '', // Имя пользователя
     };
+  },
+  created() {
+    this.username = localStorage.getItem('user_name') || ''; // Загружаем username из localStorage
   },
   mounted() {
     this.fetchCategories(); // Загружаем категории при монтировании компонента
@@ -116,6 +132,14 @@ export default {
       minute: '2-digit',
     });
   },
+  logout() {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user_name');
+      localStorage.removeItem('user_id');
+      this.token = ''; // Очищаем токен
+      this.username = ''; // Очищаем username
+      this.$router.push('/login'); // Перенаправляем на страницу входа
+    },
   },
 };
 </script>

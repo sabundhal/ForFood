@@ -7,9 +7,15 @@
   </v-app>
 </template>
 
-<script setup>
-import { RouterView } from 'vue-router'
+<script>
+import { RouterView } from 'vue-router';
 import Menu from './components/Menu.vue';
+
+export default {
+  components: {
+    Menu,
+  },
+};
 </script>
 
 <style>

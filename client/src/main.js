@@ -14,8 +14,9 @@ const app = createApp(App);
 // Подключаем плагины
 app.use(router);
 app.use(vuetify);
+// Создаем глобальное реактивное состояние
+// Создаем реактивное состояние
+// Создаем глобальное событие
+app.config.globalProperties.$eventBus = new window.EventTarget();
 
-// Монтируем приложение
-app.mount('#app');
-
-
+app.use(router).mount('#app');
