@@ -2,7 +2,6 @@
   <v-app-bar app>
     <v-spacer></v-spacer>
     <v-btn text to="/main">Главная</v-btn>
-    <v-btn text to="/books">Книги</v-btn>
     <v-btn text to="/pediatric">Калькулятор</v-btn>
     <v-btn text to="/calculationhistory">История Расчетов</v-btn>
     <v-spacer></v-spacer>

@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Books from '../components/Books.vue';
 import Register from '../components/Register.vue';
 import Login from '../components/Login.vue';
 import Main from '../components/Main.vue';
@@ -12,11 +11,6 @@ const routes = [
   {
     path: '/',
     redirect: '/main'  // Перенаправляем с корневого пути на /main
-  },
-  {
-    path: '/books',
-    name: 'Books',
-    component: Books,
   },
   {
     path: '/register',
@@ -42,6 +36,7 @@ const routes = [
     path: '/calculationhistory',
     name: 'CalculationHistory',
     component: CalculationHistory,
+     meta: { requiresAuth: true }  // Добавляем мета-поле для проверки авторизации
   },
   {
     path: '/pediatric',

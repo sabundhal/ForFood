@@ -205,7 +205,7 @@ export default {
         localStorage.setItem('access_token', token);
           // Вызываем sendTokenToServer в основном окне
       this.sendTokenToServer(token);
-        this.$router.push({ name: 'Books' });
+        this.$router.push({ name: 'Main' });
       }
     },
   },

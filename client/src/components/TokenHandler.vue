@@ -24,7 +24,7 @@ export default {
           console.error('Нет связи с родительским окном.');
           // Если окна нет, сохраняем токен и перенаправляем пользователя
           localStorage.setItem('access_token', token);
-          this.$router.push({ name: 'Account' });
+          this.$router.push({ name: 'Main' });
         }
       } else {
         console.error('Токен не найден в URL.');

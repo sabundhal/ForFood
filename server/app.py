@@ -19,8 +19,16 @@ def initialize_database():
     cursor = conn.cursor()
 
     try:
-        cursor.execute('''CREATE TABLE IF NOT EXISTS users
-                  (id INTEGER PRIMARY KEY, username TEXT, email TEXT UNIQUE, password TEXT)''')
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY,
+            username TEXT,
+            email TEXT UNIQUE,
+            password TEXT,
+            is_yandex INTEGER DEFAULT 0,  -- Флаг (1 — Яндекс, 0 — обычный)
+            yandex_id INTEGER UNIQUE         -- Уникальный ID Яндекса
+        )
+        ''')
 
         cursor.execute('''CREATE TABLE IF NOT EXISTS products
                   (id INTEGER PRIMARY KEY, name TEXT, category TEXT, price REAL, discount REAL)''')
@@ -263,6 +271,19 @@ def initialize_database():
             ]
         cursor.executemany("INSERT INTO products (name, category, price, discount) VALUES (?, ?, ?, ?)", products)
 
+        # # Список пользователей
+        # technical_users = [
+        #     ('user1', 'user1@example.com', 'password123', 0, None),  # Обычный пользователь
+        #     ('yandex_user', 'yandex_user@example.com', 'password123', 1, '123456789')  # Яндекс-пользователь
+        # ]
+        # # Вставляем пользователей в таблицу
+        # cursor.executemany(
+        #     "INSERT INTO users (username, email, password, is_yandex, yandex_id) VALUES (?, ?, ?, ?, ?)",
+        #     technical_users
+        # )
+
+
+
         conn.commit()
         print("Database initialized successfully.")
     except Exception as e:
@@ -367,6 +388,28 @@ def handle_yandex_auth():
     try:
         # Получаем данные пользователя
         user_info = get_user_info(token)
+        yandex_id = user_info["id"]  # Уникальный ID Яндекса
+        # Проверяем, есть ли пользователь в БД
+        conn = sqlite3.connect('myapp.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE yandex_id = ?", (yandex_id,))
+        user = cursor.fetchone()
+
+        if not user:
+            # Пользователя нет, создаем его
+            username = user_info.get("login")
+            email = user_info.get("default_email", user_info.get("emails", [None])[0])
+            password = yandex_id  # Пароль = yandex_id (или можно оставить NULL)
+            hashed_password = hashlib.sha256(password.encode()).hexdigest()
+            cursor.execute(
+                "INSERT INTO users (username, email, password, is_yandex, yandex_id) VALUES (?, ?, ?, ?, ?)",
+                (username, email, hashed_password, 1, yandex_id)
+            )
+            conn.commit()  # Сохраняем изменения в БД
+
+            # Получаем только что созданного пользователя
+            cursor.execute("SELECT * FROM users WHERE yandex_id = ?", (yandex_id,))
+            user = cursor.fetchone()
         return jsonify({"success": True, "user": user_info})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -432,82 +475,6 @@ def calculate_dosage():
         return jsonify({'error': str(e)}), 400
 
 
-
-# @app.route('/api/calculate', methods=['POST'])
-# #@jwt_required()  # Защищаем маршрут JWT-токеном
-# def calculate_dosage():
-#     data = request.json
-#     user_id = data.get('user_id')
-#     drug_id = data.get('drug_id')
-#     weight = data.get('weight')
-#     weight = float(weight)
-#
-#     # Проверяем наличие обязательных параметров
-#     if user_id is None or drug_id is None or weight is None:
-#         return jsonify({'error': 'user_id, drug_id, and weight are required'}), 400
-#
-#     # Проверяем корректность веса
-#     if weight <= 0:
-#         return jsonify({'error': 'Weight must be greater than 0'}), 400
-#
-#     # Получаем данные о препарате из базы данных
-#     try:
-#         conn = sqlite3.connect('myapp.db')
-#         cursor = conn.cursor()
-#
-#         # Запрос данных о препарате
-#         #можно ли тут написать. select *?
-#         cursor.execute('''SELECT name, category_id, mls_var, mgs_var
-#                           FROM drugs
-#                           WHERE id = ?''', (drug_id,))
-#         drug = cursor.fetchone()
-#
-#         if not drug:
-#             conn.close()
-#             return jsonify({'error': 'Drug not found'}), 404
-#
-#         # Извлекаем данные из результата запроса
-#         name, category_id, mls_var, mgs_var = drug
-#
-#         # Выполняем расчеты
-#         mls_total = weight * mls_var
-#         mgs_total = weight * mgs_var
-#
-#         # Сохраняем расчет в историю
-#         # Установка значений для всех 23 полей
-#         cursor.execute('''
-#             INSERT INTO calculation_history (
-#                 user_id, calculation_id, drug_id, drug_name, username, weight, dosage_mls, dosage_mgs,
-#                 totalMgs, totalhigh, totalhighsachets, maximumMgsPerDay, highMgs,
-#                 loading_dose, strep_drug, messageMgs, messageOther, calculation_type,
-#                 calculation_status, calculation_version, patient_id, patient_name, error_message, age
-#             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)''',
-#                        (
-#                            user_id, None, drug_id, name, 'Username', weight, mls_total, mgs_total,
-#                            0, 0, 0, 0, 0, 0, 0, 'Message', None, category_id,
-#                            'Status', 'Version', 0, 'Patient Name', None , None
-#                        ))
-#         # Получаем автоматически сгенерированный id
-#         calculation_id = cursor.lastrowid
-#         # Обновляем запись, чтобы установить calculation_id равным id
-#         cursor.execute('''
-#             UPDATE calculation_history
-#             SET calculation_id = ?
-#             WHERE id = ?''',
-#                        (calculation_id, calculation_id))
-#         conn.commit()
-#
-#
-#     except sqlite3.Error as e:
-#         return jsonify({'error': f'Database error: {str(e)}'}), 500
-#
-#         # Возвращаем ответ с calculation_id
-#     return jsonify({
-#             'mlsTotal': mls_total,
-#             'mgsTotal': mgs_total,
-#             'calculation_id': calculation_id
-#         })
-#     conn.close()
 
 #############
 @app.route('/api/calculation-history/', methods=['GET'])
