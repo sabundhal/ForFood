@@ -13,7 +13,7 @@
       <div class="title__section__image title__section-item">
         <img id="calcicon" src="https://www.jackofallorgans.com/wp-content/uploads/2017/12/SyrupBottle2.png" alt="Calculator Icon" />
       </div>
-      <div class="title__section-label title__section-item">Paediatric Dose Calculator</div>
+      <div class="title__section-label title__section-item">Калькулятор детской дозировки</div>
     </div>
 
     <div class="drug_calc">
@@ -24,7 +24,7 @@
 
     <!-- Вес -->
     <div class="weight__section">
-      <div class="weight__section-item weight__section-label">Weight (kg)</div>
+      <div class="weight__section-item weight__section-label">Вес (кг)</div>
       <input
         class="weight__section-item weight__section-input"
         id="theweight"
@@ -41,7 +41,7 @@
      <!-- Выбор препарата -->
     <div class="drug__section">
       <select id="drug" ref="drugIdInput" v-model="selectedDrug" @change="validate">
-        <option value="None">Select Drug</option>
+        <option value="None">Выберите препарат</option>
         <optgroup v-for="(drugs, category) in drugsByCategories" :key="category" :label="category">
           <option v-for="drug in drugs" :key="drug.id" :value="drug.id">
             {{ drug.name }}
@@ -51,16 +51,16 @@
     </div>
 
         <div class="calculate__section">
-          <input type="button" id="calcbutton" value="Calculate" @click=calculateDosage() />
+          <input type="button" id="calcbutton" value="Рассчитать" @click=calculateDosage() />
         </div>
 
        <div class="result__section">
         <div class="result__section-mls">
             <div class="result__section-mls-item result__section-mls-label">
-                Dose <br />in millilitres
+                Дозировка <br />в миллилитрах (что набирать в шприц)
             </div>
             <div class="result__section-mls-item result__section-mls-result" id="Result" style="display: block">
-                {{ mlsTotal }} <!-- Отображаем значение мл -->
+                {{ standard_dose_ml }} <!-- Отображаем значение мл -->
             </div>
             <button class="result__section-mls-item clipboard btn tippy copy"
                     data-tippy-content="Copied to Clipboard"
@@ -74,10 +74,27 @@
         </div>
         <div class="result__section-mgs">
             <div class="result__section-mgs-item result__section-mgs-label">
-                Dose <br />in milligrams
+                Повышенная доза <br />в миллилитрах (что набирать в шприц)
             </div>
             <div class="result__section-mgs-item result__section-mgs-result" id="ResultMgs" style="display: block">
-                {{ mgsTotal }} <!-- Отображаем значение мг -->
+                {{ high_dose_ml }} <!-- Отображаем значение мг -->
+            </div>
+            <button class="result__section-mgs-item clipboard btn tippy copy"
+                    data-tippy-content="Copied to Clipboard"
+                    title="Copy to Clipboard"
+                    @click="copyToClipboard('ResultMgs')">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="16" height="16">
+    <path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 272C191.1 372.4 220.7 400 256 400h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 224.1c0-8.836 7.164-16 16-16H160V256H64.02L63.99 416h192V448z"/>
+  </svg>
+  Копировать
+</button>
+        </div>
+    <div class="result__section-mgs">
+            <div class="result__section-mgs-item result__section-mgs-label">
+                Максимальная доза в день <br />!!!ПРЕВЫШЕНИЕ НЕДОПУСТИМО!!!
+            </div>
+            <div class="result__section-mgs-item result__section-mgs-result" id="ResultMgs" style="display: block">
+                {{ max_dose_ml }} <!-- Отображаем значение мг -->
             </div>
             <button class="result__section-mgs-item clipboard btn tippy copy"
                     data-tippy-content="Copied to Clipboard"
@@ -133,8 +150,9 @@ export default {
       weight: "",
       selectedDrug: "None",
       drugsByCategories: {}, // Данные, сгруппированные по категориям
-      mlsTotal: '', // Реактивное свойство для мл
-      mgsTotal: '', // Реактивное свойство для мг
+      standard_dose_ml: '', // Реактивное свойство для мл
+      high_dose_ml: '', // Реактивное свойство для мг
+      max_dose_ml: '', // Реактивное свойство для мг
       errorMessage: "",
       warningMessage: "",
       weightBorder: "1px solid #cacaca",
@@ -191,8 +209,9 @@ export default {
     })
     .then(data => {
         this.result = data; // Устанавливаем результат
-        this.mlsTotal = data.mlsTotal; // Обновляем молярные данные
-        this.mgsTotal = data.mgsTotal;
+        this.standard_dose_ml = data.standard_dose_ml; // Обновляем молярные данные
+        this.high_dose_ml = data.high_dose_ml;
+        this.max_dose_ml = data.max_dose_ml;
     })
     .catch(error => {
         this.error = 'Ошибка при выполнении запроса: ' + error.message;
@@ -239,14 +258,7 @@ export default {
       this.mlsTotal = null;
       this.mgsTotal = null;
     },
-    calculateMlsTotal() {
-      // Пример расчета (замените на вашу логику)
-      this.mlsTotal = this.weight * 2; // Пример: 2 мл на каждый кг
-    },
-    calculateMgsTotal() {
-      // Пример расчета (замените на вашу логику)
-      this.mgsTotal = this.weight * 5; // Пример: 5 мг на каждый кг
-    },
+
     copyToClipboard(elementId) {
       const element = document.getElementById(elementId);
       if (element) {
@@ -264,7 +276,6 @@ export default {
           console.error('Error fetching drugs:', error);
         });
     },
-  },
   logout() {
       localStorage.removeItem('access_token');
       localStorage.removeItem('user_name');
@@ -274,7 +285,8 @@ export default {
       this.$router.push('/login'); // Перенаправляем на страницу входа
     }
 
-};
+ }
+}
 
 </script>
 <style scoped>

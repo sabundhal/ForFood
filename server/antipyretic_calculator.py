@@ -107,13 +107,24 @@ def fetchDrugInfo(drug_id):
     try:
         conn = sqlite3.connect('myapp.db')
         cursor = conn.cursor()
-        cursor.execute('''SELECT name, category_id, mls_var, mgs_var
-                          FROM drugs
-                          WHERE id = ?''', (drug_id,))
+        cursor.execute('''SELECT name, category_id, mls_var, mgs_var, mls_max, mgs_max, high_range, high_modifier, mls_max_high, mgs_max_high
+                                 FROM drugs
+                                 WHERE id = ?''', (drug_id,))
         drug = cursor.fetchone()
         if not drug:
             raise ValueError("Drug not found")
-        return {'name': drug[0], 'category_id': drug[1], 'mls_var': drug[2], 'mgs_var': drug[3]}
+        return {
+            'name': drug[0],                 # Название препарата
+            'category_id': drug[1],          # ID категории
+            'mls_var': drug[2],              # Объем на одну дозу (мл)
+            'mgs_var': drug[3],              # Доза на одну дозу (мг)
+            'mls_max': drug[4],              # Максимальный объем в сутки (мл)
+            'mgs_max': drug[5],              # Максимальная доза в сутки (мг)
+            'high_range': drug[6],           # Флаг для высокой дозировки
+            'high_modifier': drug[7],        # Модификатор для высокой дозировки
+            'mls_max_high': drug[8],         # Максимальный объем для высокой дозировки (мл)
+            'mgs_max_high': drug[9]          # Максимальная доза для высокой дозировки (мг)
+        }
     except sqlite3.Error as e:
         raise ValueError(f"Database error: {str(e)}")
     finally:
@@ -126,11 +137,34 @@ def calculateDosage(weight, drug_info):
     :param drug_info: Данные о препарате (mls_var, mgs_var)
     :return: mls_total, mgs_total
     """
+    # Стандартная дозировка
     mls_total = weight * drug_info['mls_var']
     mgs_total = weight * drug_info['mgs_var']
-    return mls_total, mgs_total
 
-def saveCalculationToDB(data, mls_total, mgs_total, drug_info, category_id):
+    # Проверка на высокую дозировку
+    if drug_info['high_range'] == 1:  # Если высокая дозировка разрешена
+        # Применяем high_modifier к стандартной дозировке
+        mls_high = weight * drug_info['mls_var'] * drug_info['high_modifier']
+        mgs_high = weight * drug_info['mgs_var'] * drug_info['high_modifier']
+        # Проверка, чтобы высокая дозировка не превышала максимальную суточную дозу
+        if mls_high > drug_info['mls_max']:
+            mls_high = drug_info['mls_max']
+        if mgs_high > drug_info['mgs_max']:
+            mgs_high = drug_info['mgs_max']
+    else:
+        mls_high = None
+        mgs_high = None
+
+    return {
+        'standard_dose_ml': mls_total,  # Стандартный объем на одну дозу (мл)
+        'standard_dose_mg': mgs_total,  # Стандартная доза на одну дозу (мг)
+        'high_dose_ml': mls_high,  # Высокий объем на одну дозу (мл)
+        'high_dose_mg': mgs_high,  # Высокая доза на одну дозу (мг)
+        'max_dose_ml': drug_info['mls_max'],  # Максимальный объем в сутки (мл)
+        'max_dose_mg': drug_info['mgs_max']  # Максимальная доза в сутки (мг)
+    }
+#def saveCalculationToDB(data, mls_total, mgs_total, drug_info, category_id, mls_high):
+def saveCalculationToDB(data, standard_dose_ml, standard_dose_mg, drug_info, category_id, high_dose_ml):
     """
     Сохраняет результат расчета в базу данных.
     :param data: Входные данные (user_id, drug_id, weight)
@@ -151,8 +185,8 @@ def saveCalculationToDB(data, mls_total, mgs_total, drug_info, category_id):
                         calculation_status, calculation_version, patient_id, patient_name, error_message, age
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)''',
                                (
-                                   data['user_id'], None, data['drug_id'], drug_info['name'], 'Username', float(data['weight']), mls_total, mgs_total,
-                                   0, 0, 0, 0, 0, 0, 0, 'Message', None, category_id,
+                                   data['user_id'], None, data['drug_id'], drug_info['name'], 'Username', float(data['weight']), standard_dose_ml, standard_dose_mg,
+                                   0, high_dose_ml, 0, 0, 0, 0, 0, 'Message', None, category_id,
                                    'Status', 'Version', 0, 'Patient Name', None , None))
         calculation_id = cursor.lastrowid
         # Обновляем запись, чтобы установить calculation_id равным id
@@ -179,10 +213,25 @@ def calculateAntipyreticDosage(data):
     validateInput(data)
     drug_info = fetchDrugInfo(data['drug_id'])
     category_id = drug_info['category_id']
-    mls_total, mgs_total = calculateDosage(float(data['weight']), drug_info)
-    calculation_id = saveCalculationToDB(data, mls_total, mgs_total, drug_info, category_id)
+    # Вызов calculateDosage, который возвращает нужные значения
+    result = calculateDosage(float(data['weight']), drug_info)
+    # Вызов saveCalculationToDB с новыми параметрами
+    calculation_id = saveCalculationToDB(
+        data,
+        result['standard_dose_ml'],  # standard_dose_ml
+        result['standard_dose_mg'],  # standard_dose_mg
+        drug_info,
+        category_id,
+        result['high_dose_ml']  # high_dose_ml
+    )
+
+    # Возвращаем все необходимые поля
     return {
-        'mlsTotal': mls_total,
-        'mgsTotal': mgs_total,
-        'calculation_id': calculation_id,
+        'standard_dose_ml': result['standard_dose_ml'],  # Стандартный объем (мл)
+        'standard_dose_mg': result['standard_dose_mg'],  # Стандартная доза (мг)
+        'high_dose_ml': result['high_dose_ml'],  # Высокий объем (мл)
+        'high_dose_mg': result['high_dose_mg'],  # Высокая доза (мг)
+        'max_dose_ml': drug_info['mls_max'],  # Максимальный объем (мл)
+        'max_dose_mg': drug_info['mgs_max'],  # Максимальная доза (мг)
+        'calculation_id': calculation_id  # ID расчета
     }
