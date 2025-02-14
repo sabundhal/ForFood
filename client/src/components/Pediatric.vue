@@ -106,7 +106,52 @@
   Копировать
 </button>
         </div>
+        <div class="result__section">
+        <div class="result__section-mls">
+            <div class="result__section-mls-item result__section-mls-label">
+                Обычная доза <br />ректальных суппозиториев (шт)
+            </div>
+            <div class="result__section-mls-item result__section-mls-result" id="Result" style="display: block">
+                {{ suppositories_min }} <!-- Отображаем значение мл -->
+            </div>
+            <button class="result__section-mls-item clipboard btn tippy copy"
+                    data-tippy-content="Copied to Clipboard"
+                    title="Copy to Clipboard"
+                    @click="copyToClipboard('Result')">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="16" height="16">
+    <path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 272C191.1 372.4 220.7 400 256 400h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 224.1c0-8.836 7.164-16 16-16H160V256H64.02L63.99 416h192V448z"/>
+  </svg>
+  Копировать
+</button>
+        </div>
+
     </div>
+             <div class="result__section">
+        <div class="result__section-mls">
+            <div class="result__section-mls-item result__section-mls-label">
+                Повышенная доза <br />ректальных суппозиториев (шт)
+            </div>
+            <div class="result__section-mls-item result__section-mls-result" id="Result" style="display: block">
+                {{ suppositories_high }} <!-- Отображаем значение мл -->
+            </div>
+            <button class="result__section-mls-item clipboard btn tippy copy"
+                    data-tippy-content="Copied to Clipboard"
+                    title="Copy to Clipboard"
+                    @click="copyToClipboard('Result')">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="16" height="16">
+    <path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 272C191.1 372.4 220.7 400 256 400h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 224.1c0-8.836 7.164-16 16-16H160V256H64.02L63.99 416h192V448z"/>
+  </svg>
+  Копировать
+</button>
+        </div>
+
+    </div>
+
+
+
+
+    </div>
+
       </form>
     </div>
         <!-- Сообщения об ошибках -->
@@ -153,6 +198,8 @@ export default {
       standard_dose_ml: '', // Реактивное свойство для мл
       high_dose_ml: '', // Реактивное свойство для мг
       max_dose_ml: '', // Реактивное свойство для мг
+      suppositories_high: '',
+      suppositories_min: '',
       errorMessage: "",
       warningMessage: "",
       weightBorder: "1px solid #cacaca",
@@ -212,6 +259,8 @@ export default {
         this.standard_dose_ml = data.standard_dose_ml; // Обновляем молярные данные
         this.high_dose_ml = data.high_dose_ml;
         this.max_dose_ml = data.max_dose_ml;
+        this.suppositories_high = data.suppositories_high;
+        this.suppositories_min = data.suppositories_min;
     })
     .catch(error => {
         this.error = 'Ошибка при выполнении запроса: ' + error.message;
@@ -257,6 +306,10 @@ export default {
     clearResults() {
       this.mlsTotal = null;
       this.mgsTotal = null;
+      this.max_dose_ml = null;
+      this.suppositories_high = null;
+      this.suppositories_min = null;
+
     },
 
     copyToClipboard(elementId) {

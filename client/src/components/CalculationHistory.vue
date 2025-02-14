@@ -44,11 +44,11 @@
         <th>ID</th>
         <th>Дата</th>
         <th>Название препарата</th>
-        <th>Категория</th>
         <th>Вес (кг)</th>
-        <th>Доза (мл)</th>
-        <th>Доза (мг)</th>
-        <th>ID пользователя</th>
+        <th>Обычная Доза (мл)</th>
+        <th>Повышенная Доза (мл)</th>
+        <th>Обычная Доза (супп)</th>
+        <th>Повышенная Доза (супп)</th>
       </tr>
     </thead>
     <tbody>
@@ -56,11 +56,11 @@
         <td>{{ item.id }}</td>
         <td>{{ formatDate(item.created_at) }}</td>
         <td>{{ item.drug_name }}</td>
-        <td>{{ item.calculation_type }}</td>
         <td>{{ item.weight }}</td>
-        <td>{{ item.mls }}</td>
-        <td>{{ item.mgs }}</td>
-        <td>{{ item.user_id }}</td>
+        <td>{{ item.standard_dose_ml }}</td>
+        <td>{{ item.high_dose_ml }}</td>
+        <td>{{ item.standard_dose_ml }}</td>
+        <td>{{ item.high_dose_ml }}</td>
       </tr>
     </tbody>
   </table>

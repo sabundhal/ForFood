@@ -119,7 +119,7 @@ def initialize_database():
                  )''')
 
 # Заполнение данных препаратов (пример для нескольких записей)
-        drugs_data = [
+#         drugs_data = [
             # ('Paracetamol120', 1, False, 0.625, 15, 'every four hours, up to a maximum of four doses in 24 hours', 42,
             #  1000, True, 1.25, 30, 62.5, 1500,
             #  '<div class=\'message__section-dosing-item message__section-dosing-label\'><strong>General Dosing:</strong> <br> <div class=\'message__section-dosing-instructions\'><span class=\'age-group\'>1 month - 18 years</span> 15 mg/kg per dose (maximum 1 g) every four hours; maximum 75 mg/kg per day (without exceeding 4 g) for 48 hours, maximum of 60 mg/kg per day (without exceeding 4 g) thereafter <br> <span class=\'age-group\'> Note</span> A loading dose of 30 mg/kg (maximum 1.5 g) may be given provided there has been no paracetamol given within the preceding 12 hours</div></div>',
@@ -219,12 +219,12 @@ def initialize_database():
             #  'https://nzfchildren.org.nz/nzf_897', False, None, None, None, False, None, None, None, 8, 105, None, None, None, None, None, None),
             # #####Суппозитарии
             #####Суппозитарии
-            ('Ибупрофен суппозиторий ректальный 60 мг', 6, False, None, 60, '3 раза в день', None, 180,
-             False, None, None, None, None,
-             'Применять ректально, 1 свеча 3 раза в день. Не превышать максимальную дозу 180 мг в сутки.',
-             'https://example.com', False, None, None, None, False, '', None, None, None, None, None, None,
-             None, None, 'суппозитории ректальные', None)
-            ]
+            # ('Ибупрофен суппозиторий ректальный 60 мг', 6, False, None, 60, '3 раза в день', None, 180,
+            #  False, None, None, None, None,
+            #  'Применять ректально, 1 свеча 3 раза в день. Не превышать максимальную дозу 180 мг в сутки.',
+            #  'https://example.com', False, None, None, None, False, '', None, None, None, None, None, None,
+            #  None, None, 'суппозитории ректальные', None)
+            # ]
 
 
             # ('Loratadine', 3, False, None, None, 'once a day', None, None, False, None, None, None, None,
@@ -259,15 +259,15 @@ def initialize_database():
 
 #Выполняем вставку
 
-        cursor.executemany('''INSERT INTO drugs
-    (name, category_id, tablet_only, mls_var, mgs_var, number_of_times_a_day,
-     mls_max, mgs_max, loading_dose, mls_var_loading, mgs_var_loading,
-     mls_max_loading, mgs_max_loading, instructions, nzf_link,
-     high_range, high_modifier, mls_max_high, mgs_max_high,
-     strep_drug, strep_frequency, mls_var_strep, mgs_var_strep,
-     mls_strep_max, mgs_strep_max, weight_cutoff_1, weight_cutoff_2, range1_dose, range2_dose, form, age_range)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', drugs_data)
-
+    #     cursor.executemany('''INSERT INTO drugs
+    # (name, category_id, tablet_only, mls_var, mgs_var, number_of_times_a_day,
+    #  mls_max, mgs_max, loading_dose, mls_var_loading, mgs_var_loading,
+    #  mls_max_loading, mgs_max_loading, instructions, nzf_link,
+    #  high_range, high_modifier, mls_max_high, mgs_max_high,
+    #  strep_drug, strep_frequency, mls_var_strep, mgs_var_strep,
+    #  mls_strep_max, mgs_strep_max, weight_cutoff_1, weight_cutoff_2, range1_dose, range2_dose, form, age_range)
+    # VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', drugs_data)
+    #
         products = [
             ('HP Pavilion Laptop', 'Electronics', 10.99, 10),
             ('Samsung Galaxy Smartphone', 'Electronics', 15.99, None),
@@ -276,16 +276,16 @@ def initialize_database():
             ]
         cursor.executemany("INSERT INTO products (name, category, price, discount) VALUES (?, ?, ?, ?)", products)
 
-        # # Список пользователей
-        # technical_users = [
-        #     ('user1', 'user1@example.com', 'password123', 0, None),  # Обычный пользователь
-        #     ('yandex_user', 'yandex_user@example.com', 'password123', 1, '123456789')  # Яндекс-пользователь
-        # ]
-        # # Вставляем пользователей в таблицу
-        # cursor.executemany(
-        #     "INSERT INTO users (username, email, password, is_yandex, yandex_id) VALUES (?, ?, ?, ?, ?)",
-        #     technical_users
-        # )
+ # Список пользователей
+        technical_users = [
+            ('user1', 'user1@example.com', 'password123', 0, None),  # Обычный пользователь
+            ('yandex_user', 'yandex_user@example.com', 'password123', 1, '123456789')  # Яндекс-пользователь
+        ]
+        # Вставляем пользователей в таблицу
+        cursor.executemany(
+            "INSERT INTO users (username, email, password, is_yandex, yandex_id) VALUES (?, ?, ?, ?, ?)",
+            technical_users
+        )
 
 
 
@@ -526,8 +526,11 @@ def get_calculation_history():
         'drug_name': row[4],  # drug_name
         'calculation_type': row[18],
         'weight': row[6],       # calculation_type
-        'mls': row[7],  # dosage_mls
-        'mgs': row[8],  # dosage_mgs
+        'standard_dose_ml': row[7],  # dosage_mls
+        'high_dose_ml': row[10],
+        'suppositories_high': row[16],
+        'suppositories_min': row[17],
+
         'created_at': row[24]  # calculation_time
     })
         return jsonify(result), 200
