@@ -55,101 +55,55 @@
         </div>
 
        <div class="result__section">
-        <div class="result__section-mls">
+        <div class="result__section-mls" v-if="standard_dose_ml">
             <div class="result__section-mls-item result__section-mls-label">
                 Дозировка <br />в миллилитрах (что набирать в шприц)
             </div>
             <div class="result__section-mls-item result__section-mls-result" id="Result" style="display: block">
                 {{ standard_dose_ml }} <!-- Отображаем значение мл -->
             </div>
-            <button class="result__section-mls-item clipboard btn tippy copy"
-                    data-tippy-content="Copied to Clipboard"
-                    title="Copy to Clipboard"
-                    @click="copyToClipboard('Result')">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="16" height="16">
-    <path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 272C191.1 372.4 220.7 400 256 400h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 224.1c0-8.836 7.164-16 16-16H160V256H64.02L63.99 416h192V448z"/>
-  </svg>
-  Копировать
-</button>
+
         </div>
-        <div class="result__section-mgs">
+        <div class="result__section-mgs" v-if="high_dose_ml">
             <div class="result__section-mgs-item result__section-mgs-label">
                 Повышенная доза <br />в миллилитрах (что набирать в шприц)
             </div>
             <div class="result__section-mgs-item result__section-mgs-result" id="ResultMgs" style="display: block">
                 {{ high_dose_ml }} <!-- Отображаем значение мг -->
             </div>
-            <button class="result__section-mgs-item clipboard btn tippy copy"
-                    data-tippy-content="Copied to Clipboard"
-                    title="Copy to Clipboard"
-                    @click="copyToClipboard('ResultMgs')">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="16" height="16">
-    <path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 272C191.1 372.4 220.7 400 256 400h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 224.1c0-8.836 7.164-16 16-16H160V256H64.02L63.99 416h192V448z"/>
-  </svg>
-  Копировать
-</button>
+
         </div>
-    <div class="result__section-mgs">
-            <div class="result__section-mgs-item result__section-mgs-label">
+    <div class="result__section-max-mgs" v-if="max_dose_ml">
+            <div class="result__section-max-mgs-item result__section-max-mgs-label">
                 Максимальная доза в день <br />!!!ПРЕВЫШЕНИЕ НЕДОПУСТИМО!!!
             </div>
-            <div class="result__section-mgs-item result__section-mgs-result" id="ResultMgs" style="display: block">
+            <div class="result__ssection-max-mgs-item result__section-max-mgs-result" id="ResultMgs" style="display: block">
                 {{ max_dose_ml }} <!-- Отображаем значение мг -->
             </div>
-            <button class="result__section-mgs-item clipboard btn tippy copy"
-                    data-tippy-content="Copied to Clipboard"
-                    title="Copy to Clipboard"
-                    @click="copyToClipboard('ResultMgs')">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="16" height="16">
-    <path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 272C191.1 372.4 220.7 400 256 400h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 224.1c0-8.836 7.164-16 16-16H160V256H64.02L63.99 416h192V448z"/>
-  </svg>
-  Копировать
-</button>
+
         </div>
         <div class="result__section">
-        <div class="result__section-mls">
-            <div class="result__section-mls-item result__section-mls-label">
+        <div class="result__section-supp-min"  v-if="suppositories_min">
+            <div class="result__ssection-supp-min-item result__section-supp-min-label">
                 Обычная доза <br />ректальных суппозиториев (шт)
             </div>
-            <div class="result__section-mls-item result__section-mls-result" id="Result" style="display: block">
+            <div class="result__section-supp-min-item result__section-supp-min-result" id="Result" style="display: block">
                 {{ suppositories_min }} <!-- Отображаем значение мл -->
             </div>
-            <button class="result__section-mls-item clipboard btn tippy copy"
-                    data-tippy-content="Copied to Clipboard"
-                    title="Copy to Clipboard"
-                    @click="copyToClipboard('Result')">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="16" height="16">
-    <path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 272C191.1 372.4 220.7 400 256 400h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 224.1c0-8.836 7.164-16 16-16H160V256H64.02L63.99 416h192V448z"/>
-  </svg>
-  Копировать
-</button>
+
         </div>
 
     </div>
              <div class="result__section">
-        <div class="result__section-mls">
-            <div class="result__section-mls-item result__section-mls-label">
+        <div class="result__section-supp-high"  v-if="suppositories_high">
+            <div class="result__section-supp-high-item result__section-supp-high-label">
                 Повышенная доза <br />ректальных суппозиториев (шт)
             </div>
-            <div class="result__section-mls-item result__section-mls-result" id="Result" style="display: block">
+            <div class="result__section-supp-high-item result__section-supp-high-result" id="Result" style="display: block">
                 {{ suppositories_high }} <!-- Отображаем значение мл -->
             </div>
-            <button class="result__section-mls-item clipboard btn tippy copy"
-                    data-tippy-content="Copied to Clipboard"
-                    title="Copy to Clipboard"
-                    @click="copyToClipboard('Result')">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="16" height="16">
-    <path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 272C191.1 372.4 220.7 400 256 400h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 224.1c0-8.836 7.164-16 16-16H160V256H64.02L63.99 416h192V448z"/>
-  </svg>
-  Копировать
-</button>
         </div>
-
     </div>
-
-
-
-
     </div>
 
       </form>
@@ -157,11 +111,50 @@
         <!-- Сообщения об ошибках -->
     <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
 
+    <div class="info__section" v-if="nzf_link || number_of_times_a_day || instructions">
+  <!-- Инструкции по применению -->
+  <div class="info__section-item" v-if="instructions">
+    <div class="info__section-label">Инструкции:</div>
+    <div class="info__section-text">{{ instructions }}</div>
+  </div>
+
+  <!-- Количество приемов в день -->
+  <div class="info__section-item" v-if="number_of_times_a_day">
+    <div class="info__section-label">Количество приемов в день:</div>
+    <div class="info__section-text">{{ number_of_times_a_day }}</div>
+  </div>
+
+
+
+</div>
+
+
+
     <div class="message__section-dosing" id="dosing-section" style="display: none">
       <div class="message__section-dosing-item message__section-dosing-label" id="instructions"></div>
     </div>
 
     <div class="calculator__footer">
+    <div class="result__section" v-if="link2">
+    <div class="result__section-mls" v-if="link1">
+        <div class="result__section-mls-item result__section-mls-label">
+            Ссылка Горминздрав:
+        </div>
+        <div class="result__section-mls-item result__section-mls-result">
+            <a :href="link1" target="_blank">{{ link1 }}</a>
+        </div>
+    </div>
+
+    <div class="result__section-mls" v-if="link2">
+        <div class="result__section-mls-item result__section-mls-label">
+            Ссылка Аптека:
+        </div>
+        <div class="result__section-mls-item result__section-mls-result">
+            <a :href="link2" target="_blank">{{ link2 }}</a>
+        </div>
+    </div>
+</div>
+
       <div class="calculator__footer-item calculator__footer-information">Further Information:</div>
       <div class="tippy" data-tippy="NZ Formulary">
         <a class="calculator__footer-item" href="https://nzfchildren.org.nz" target="_blank" id="nzflink">
@@ -182,7 +175,6 @@
 
 
   </div>
-
 </template>
 
 <script>
@@ -206,6 +198,11 @@ export default {
       drugBorder: "1px solid #cacaca",
       token: localStorage.getItem('access_token') || '', // Токен авторизации
       username: '', // Имя пользователя
+      instructions: '',
+      number_of_times_a_day: '',
+      nzf_link: '',
+      link1: null, // Инициализация для первой ссылки
+      link2: null  // Инициализация для второй ссылки
     };
   },
   created() {
@@ -261,6 +258,23 @@ export default {
         this.max_dose_ml = data.max_dose_ml;
         this.suppositories_high = data.suppositories_high;
         this.suppositories_min = data.suppositories_min;
+        this.instructions = data.instructions;
+        this.number_of_times_a_day = data.number_of_times_a_day;
+        // Разделяем строку на две ссылки и обрезаем пробелы
+        const links = data.nzf_link.split(' ').map(link => link.trim());
+        console.log('Разделенные ссылки:', links); // Проверка в консоли
+
+        if (links.length > 1) {
+            this.link1 = links[0]; // Первая ссылка
+            this.link2 = links[2]; // Вторая ссылка
+        } else if (links.length === 1) {
+            this.link1 = links[0]; // Только первая ссылка
+            this.link2 = null; // Очищаем вторую ссылку
+        } else {
+            this.link1 = null;
+            this.link2 = null;
+        }
+
     })
     .catch(error => {
         this.error = 'Ошибка при выполнении запроса: ' + error.message;
@@ -273,19 +287,23 @@ export default {
                 alert('Скопировано в буфер обмена!');
             });
         },
+        splitLinks(links) {
+      // Разделяем строку по пробелам и фильтруем пустые значения
+      return links.split(/\s+/).filter(link => link.trim() !== '');
+    },
     validate() {
      console.log('Validate method called'); // Лог для проверки
       this.clearErrors();
 
       if (this.weight === "") {
-        this.showError("Please input a weight", "weight");
+        this.showError("Введите вес", "weight");
       } else if (this.weight < 0) {
-        this.showError("Cannot be negative weight.", "weight");
+        this.showError("Вес не может быть отрицательным", "weight");
       } else if (this.weight > 100) {
         console.log('Validate 100'); // Лог для проверки
-        this.showError("Please enter a weight below 100kg.", "weight");
+        this.showError("Введите вес менее 100кг.", "weight");
       } else if (this.selectedDrug === "None") {
-        this.showError("Please select a drug", "drug");
+        this.showError("Выберите препарат", "drug");
       }
     },
 
@@ -345,4 +363,33 @@ export default {
 <style scoped>
 /* Добавьте ваши стили здесь */
 @import '../assets/calculator-style.css';
+.info__section {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.info__section-item {
+  margin-bottom: 15px;
+}
+
+.info__section-label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.info__section-text {
+  white-space: pre-line; /* Сохраняет форматирование текста */
+}
+
+.info__section-link {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.info__section-link:hover {
+  text-decoration: underline;
+}
 </style>

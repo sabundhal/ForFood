@@ -283,6 +283,7 @@ def calculateAntipyreticDosage(data):
         'calculation_id': calculation_id,  # ID расчета
         'instructions': drug_info['instructions'],
         'nzf_link': drug_info['nzf_link'],
+        'number_of_times_a_day': drug_info['number_of_times_a_day'],
         'suppositories_min': result['suppositories_min'],
         'suppositories_high': result['suppositories_high']
     }
