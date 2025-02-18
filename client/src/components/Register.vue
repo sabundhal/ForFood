@@ -1,9 +1,9 @@
 <template>
-  <div class="container">
-    <div class="row">
-      <div class="col-sm-10">
-        <h1>Регистрация</h1>
-        <hr><br><br>
+  <div class="container-fluid px-3">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-6 col-lg-4">
+        <h1 class="text-center mb-3">Регистрация</h1>
+        <hr class="mb-4">
         <alert :message="message" v-if="showMessage"></alert>
         <form>
           <div class="mb-3">
@@ -46,23 +46,26 @@
               placeholder="Подтвердите пароль"
             />
           </div>
-          <div class="btn-group" role="group">
+          <div class="d-grid gap-2">
             <button
               type="button"
-              class="btn btn-primary btn-sm"
+              class="btn btn-primary"
               @click="handleRegisterSubmit"
             >
               Зарегистрироваться
             </button>
             <button
               type="button"
-              class="btn btn-danger btn-sm"
+              class="btn btn-outline-secondary"
               @click="handleRegisterCancel"
             >
               Отмена
             </button>
           </div>
-          <p class="mt-3">Если вы уже зарегистрированы <router-link to="/login">Войдите</router-link></p>
+          <p class="text-center mt-4">
+            Если вы уже зарегистрированы,
+            <router-link to="/login" class="text-primary text-decoration-none">Войдите</router-link>
+          </p>
         </form>
       </div>
     </div>

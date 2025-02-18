@@ -1,9 +1,9 @@
 <template>
   <div class="container">
-    <div class="row">
-      <div class="col-sm-10">
+    <div class="row justify-content-center">
+      <div class="col-sm-8 col-md-6 col-lg-4">
         <h1>Вход</h1>
-        <hr><br><br>
+        <hr><br>
         <alert :message="message" v-if="showMessage"></alert>
         <form @submit.prevent="handleLoginSubmit">
           <div class="mb-3">
@@ -27,19 +27,17 @@
           <div class="btn-group" role="group">
             <button
               type="submit"
-              class="btn btn-primary btn-sm">
+              class="btn btn-primary btn-block">
               Войти
             </button>
           </div>
-          <p class="mt-3">Еще не зарегистрированы? <router-link to="/register">Зарегистрируйтесь</router-link></p>
+          <p class="mt-3 text-center">Еще не зарегистрированы? <router-link to="/register">Зарегистрируйтесь</router-link></p>
         </form>
 
-        <!-- Кнопка для авторизации через Яндекс -->
-        <div class="mt-4">
-          <button class="btn btn-secondary btn-sm" @click="startYandexAuth">Войти через Яндекс</button>
+        <div class="mt-4 text-center">
+          <button class="btn btn-secondary btn-block" @click="startYandexAuth">Войти через Яндекс</button>
         </div>
-        <!-- Контейнер для кнопки SDK -->
-    <div id="buttonContainerId"></div>
+        <div id="buttonContainerId"></div>
       </div>
     </div>
   </div>
