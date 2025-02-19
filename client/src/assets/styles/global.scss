@@ -5,108 +5,280 @@ $primary-color: #007bff;
 $secondary-color: #6c757d;
 $border-radius: 8px;
 
-// Унификация контейнеров
-.container, .container-fluid {
-  padding-left: 15px;
-  padding-right: 15px;
+/* Глобальные адаптивные настройки */
+html {
+  box-sizing: border-box;
+  font-size: 16px;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
 
-  @media (max-width: 576px) {
-    padding-left: 10px;
-    padding-right: 10px;
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+@media (max-width: 576px) {
+  html {
+    font-size: 14px;
   }
 }
 
-// Унификация заголовков
-h1 {
-  font-size: 24px;
-  font-weight: 600;
-  color: #2d3748;
-  margin-top: 0;
-  margin-bottom: 15px;
-  text-align: center;
+// Сетка
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -8px;
+}
 
-  @media (max-width: 576px) {
-    font-size: 20px;
-    margin-bottom: 10px;
+.col-md-8, .col-md-4 {
+  padding: 0 8px;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .col-md-8 {
+    width: 66.66%;
+  }
+  .col-md-4 {
+    width: 33.33%;
   }
 }
+
+// Заголовок
+.title__section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+
+  @media (max-width: 360px) {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+.title__section__image {
+  margin-bottom: 10px;
+
+  img {
+    max-width: 50px;
+    height: auto;
+
+    @media (max-width: 480px) {
+      max-width: 40px;
+    }
+  }
+}
+
+.title__section-label {
+  font-size: 1.2rem;
+  margin-left: 10px;
+
+  @media (max-width: 480px) {
+    font-size: 1rem;
+    margin-left: 0;
+  }
+}
+
+// Формы и элементы ввода
+.drug-select {
+  width: 100%;
+  max-width: 100%;
+  appearance: none;
+  padding: 10px 35px 10px 15px;
+  font-size: 16px;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    padding: 8px 30px 8px 12px;
+  }
+}
+
+.form-control {
+  @media (max-width: 480px) {
+    padding: 8px !important;
+    font-size: 13px !important;
+  }
+}
+
+// Результаты
+.result__section {
+  display: grid;
+  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  margin: 15px 0;
+
+  > div {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+
+    @media (max-width: 360px) {
+      padding: 10px;
+    }
+  }
+}
+
+// Кнопки
+.btn {
+  @media (max-width: 480px) {
+    width: 100% !important;
+    padding: 12px !important;
+  }
+}
+
+// Футер
+.calculator__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
+
+  &-item img {
+    width: 28px !important;
+    height: 28px !important;
+
+    @media (max-width: 480px) {
+      width: 24px !important;
+      height: 24px !important;
+    }
+  }
+}
+
+// Дополнительные адаптивные правки
+.weight__section-label,
+.result__section-mls-label,
+.result__section-mgs-label {
+  @media (max-width: 480px) {
+    font-size: 0.9rem;
+  }
+}
+
 .v-main {
   padding-top: 10px !important;
 }
-// Унификация кнопок
-.btn {
-  width: 100%;
-  padding: 12px;
-  font-size: 14px;
-  border-radius: $border-radius;
-  transition: background-color 0.3s, box-shadow 0.3s;
-
-  &-primary {
-    background-color: $primary-color;
-    border: none;
-
-    &:hover {
-      background-color: color.scale($primary-color, $lightness: -10%);
-    }
-  }
-
-  &-outline-secondary {
-    border: 1px solid $secondary-color;
-    color: $secondary-color;
-
-    &:hover {
-      background-color: color.scale($secondary-color, $lightness: 45%);
-    }
-  }
-
-  @media (max-width: 576px) {
-    padding: 10px;
-    font-size: 13px;
-  }
-}
-
-// Унификация форм
-form {
-  margin-bottom: 20px;
-
-  .form-control {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #e2e8f0;
-    border-radius: $border-radius;
-    font-size: 14px;
-    transition: border-color 0.3s, box-shadow 0.3s;
-
-    &:focus {
-      border-color: $primary-color;
-      box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
-      outline: none;
-    }
-
-    @media (max-width: 576px) {
-      padding: 10px;
-      font-size: 13px;
-    }
-  }
-
-  .btn-group {
-    width: 100%;
-  }
-}
 
 // Унификация отступов
-.mb-3 {
-  margin-bottom: 1rem !important;
+.mb-3 { margin-bottom: 1rem !important; }
+.mt-3 { margin-top: 1rem !important; }
+.mt-4 { margin-top: 1.5rem !important; }
+.text-center { text-align: center; }
+
+// Мобильная оптимизация
+@media (max-width: 360px) {
+  .weight__section-input {
+    font-size: 14px !important;
+    padding: 6px !important;
+  }
+
+  .info__section {
+    padding: 10px;
+
+    &-text {
+      font-size: 0.85rem;
+    }
+  }
+}
+/* Жёсткий фикс для выпадающего списка */
+.drug__section {
+  position: relative;
+  max-width: 100vw !important;
+  margin: 0 -10px !important;
+  padding: 0 10px !important;
+
+  select {
+    transform: scale(0.98) !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin-left: -10px !important;
+    padding-left: 15px !important;
+    border: 2px solid red !important; /* Для визуального контроля */
+
+    option {
+      max-width: 95vw !important;
+      white-space: pre-wrap !important;
+      word-break: break-all !important;
+      font-size: 12px !important;
+    }
+
+    optgroup {
+      max-width: 95vw !important;
+    }
+  }
+
+  @media (max-width: 480px) {
+    select {
+      font-size: 14px !important;
+      transform: scale(0.95) translateX(-2%) !important;
+    }
+  }
 }
 
-.mt-3 {
-  margin-top: 1rem !important;
+.drug-select {
+  option {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    max-width: 100vw !important;
+    padding: 8px 12px !important;
+    line-height: 1.4 !important;
+  }
+
+  optgroup {
+    font-size: 0.9em !important;
+    padding: 5px 0 !important;
+  }
 }
 
-.mt-4 {
-  margin-top: 1.5rem !important;
-}
 
-.text-center {
-  text-align: center;
+.calculator__footer {
+  &-error {
+    width: 100%;
+    margin-bottom: 15px;
+    text-align: center;
+
+    .telegram-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #0088cc;
+      text-decoration: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+
+      &:hover {
+        background-color: rgba(0, 136, 204, 0.1);
+      }
+    }
+
+    .telegram-icon {
+      filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.1));
+      transition: transform 0.3s;
+
+      &:hover {
+        transform: scale(1.1);
+      }
+    }
+
+    .error-message-text {
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-bottom: 1px dashed currentColor;
+    }
+  }
+
+  @media (max-width: 768px) {
+    &-error {
+      .telegram-link {
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .error-message-text {
+        font-size: 0.8rem;
+      }
+    }
+  }
 }

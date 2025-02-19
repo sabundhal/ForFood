@@ -2,17 +2,17 @@
 <div class="row">
    <div class="col-md-8"></div>
    <div class="col-md-4">
-          <span  v-if="!token" class="mr-2">Привет, выполни регистрацию и вход</span>
+          <span  v-if="!username" class="mr-2">Привет, выполни регистрацию и вход</span>
           <span v-else class="mr-2">Привет, {{ username }}</span>
   </div>
   </div>
   <div id="calculator">
     <div class="title__section">
-      <div class="title__section__image title__section-item">
-        <img id="calcicon" src="https://www.jackofallorgans.com/wp-content/uploads/2017/12/SyrupBottle2.png" alt="Calculator Icon" />
-      </div>
-      <div class="title__section-label title__section-item">Калькулятор детской дозировки</div>
-    </div>
+  <div class="title__section__image title__section-item">
+    <img id="calcicon" src="@/assets/icons8-heart-health-64.png" alt="Calculator Icon" />
+  </div>
+  <div class="title__section-label title__section-item">Калькулятор детской дозировки</div>
+</div>
 
     <div class="drug_calc">
       <form id="drugform" @submit.prevent="validate">
@@ -38,15 +38,15 @@
 
      <!-- Выбор препарата -->
     <div class="drug__section">
-      <select id="drug" ref="drugIdInput" v-model="selectedDrug" @change="validate">
-        <option value="None">Выберите препарат</option>
-        <optgroup v-for="(drugs, category) in drugsByCategories" :key="category" :label="category">
-          <option v-for="drug in drugs" :key="drug.id" :value="drug.id">
-            {{ drug.name }}
-          </option>
-        </optgroup>
-      </select>
-    </div>
+  <select id="drug" ref="drugIdInput" v-model="selectedDrug" @change="validate" class="drug-select">
+    <option value="None">Выберите препарат</option>
+    <optgroup v-for="(drugs, category) in drugsByCategories" :key="category" :label="category">
+      <option v-for="drug in drugs" :key="drug.id" :value="drug.id">
+        {{ drug.name }}
+      </option>
+    </optgroup>
+  </select>
+</div>
 
         <div class="calculate__section">
           <input type="button" id="calcbutton" value="Рассчитать" @click=calculateDosage() />
@@ -80,7 +80,6 @@
             </div>
 
         </div>
-        <div class="result__section">
         <div class="result__section-supp-min"  v-if="suppositories_min">
             <div class="result__ssection-supp-min-item result__section-supp-min-label">
                 Обычная доза <br />ректальных суппозиториев (шт)
@@ -89,10 +88,7 @@
                 {{ suppositories_min }} <!-- Отображаем значение мл -->
             </div>
 
-        </div>
-
     </div>
-             <div class="result__section">
         <div class="result__section-supp-high"  v-if="suppositories_high">
             <div class="result__section-supp-high-item result__section-supp-high-label">
                 Повышенная доза <br />ректальных суппозиториев (шт)
@@ -100,7 +96,6 @@
             <div class="result__section-supp-high-item result__section-supp-high-result" id="Result" style="display: block">
                 {{ suppositories_high }} <!-- Отображаем значение мл -->
             </div>
-        </div>
     </div>
     </div>
 
@@ -153,20 +148,10 @@
     </div>
 </div>
 
-      <div class="calculator__footer-item calculator__footer-information">Further Information:</div>
-      <div class="tippy" data-tippy="NZ Formulary">
-        <a class="calculator__footer-item" href="https://nzfchildren.org.nz" target="_blank" id="nzflink">
-          <img border="0" alt="nzf" src="https://www.jackofallorgans.com/wp-content/uploads/2018/11/nzf.png" width="32" height="32" />
-        </a>
-      </div>
-      <div class="tippy" data-tippy="BPAC Antibiotic Guide">
-        <a class="calculator__footer-item" href="https://bpac.org.nz/antibiotics/guide.aspx" target="_blank">
-          <img border="0" alt="nzf" src="https://www.jackofallorgans.com/wp-content/uploads/2018/11/bpac-1.png" width="32" height="32" />
-        </a>
-      </div>
-      <div class="tippy" data-tippy="Antimicrobial Susceptibility Report for 2017">
-        <a class="calculator__footer-item" href="https://www.jackofallorgans.com/wp-content/uploads/AST-2017-Table-1.pdf" target="_blank">
-          <img border="0" alt="nzf" src="https://www.jackofallorgans.com/wp-content/uploads/labtest-logo.png" width="32" height="32" />
+      <div class="calculator__footer-item calculator__footer-information">При возникновении ошибки напишите в группу Telegram</div>
+      <div class="tippy" data-tippy="">
+        <a class="calculator__footer-item" href="https://t.me/+zfl_zRo8FPowZTky" target="_blank" id="nzflink">
+          <img border="0" alt="nzf" src="https://upload.wikimedia.org/wikipedia/commons/8/83/Telegram_2019_Logo.svg" width="32" height="32" />
         </a>
       </div>
     </div>
