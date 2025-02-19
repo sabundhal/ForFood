@@ -2,10 +2,8 @@
 <div class="row">
    <div class="col-md-8"></div>
    <div class="col-md-4">
-          <router-link v-if="!token" class="btn btn-primary btn-sm" to="/login">Вход</router-link>
-          <router-link v-if="!token" class="btn btn-success btn-sm ml-2" to="/register">Регистрация</router-link>
+          <span  v-if="!token" class="mr-2">Привет, выполни регистрацию и вход</span>
           <span v-else class="mr-2">Привет, {{ username }}</span>
-          <button v-if="token" @click="logout" class="btn btn-danger btn-sm">Выход</button>
   </div>
   </div>
   <div id="calculator">

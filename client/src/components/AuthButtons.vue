@@ -6,7 +6,6 @@
 
     <!-- Приветствие и кнопка выхода, если пользователь авторизован -->
     <span v-else class="mr-2">Привет, {{ username }}</span>
-    <button v-if="token" @click="logout" class="btn btn-danger btn-sm">Выход</button>
   </div>
 </template>
 

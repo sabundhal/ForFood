@@ -1,14 +1,24 @@
 <template>
   <v-app-bar app>
     <v-spacer></v-spacer>
-    <v-btn text to="/main">Главная</v-btn>
-    <v-btn text to="/pediatric">Калькулятор</v-btn>
-    <v-btn text to="/calculationhistory">История Расчетов</v-btn>
+    <v-btn icon to="/main">
+      <v-icon>mdi-home</v-icon>
+    </v-btn>
+    <v-btn icon to="/pediatric">
+      <v-icon>mdi-calculator</v-icon>
+    </v-btn>
+    <v-btn icon to="/calculationhistory">
+      <v-icon>mdi-history</v-icon>
+    </v-btn>
     <v-spacer></v-spacer>
-    <v-btn v-if="!username" to="/login">Войти</v-btn>
+    <v-btn v-if="!username" icon to="/login">
+      <v-icon>mdi-login</v-icon>
+    </v-btn>
+    <v-btn v-if="!username" icon @click="logout">
+  <v-icon>mdi-logout</v-icon>
+    </v-btn>
   </v-app-bar>
 </template>
-
 <script>
 export default {
   name: "Menu",
