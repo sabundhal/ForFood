@@ -83,8 +83,8 @@ html {
 
 // Формы и элементы ввода
 .drug-select {
-  width: 100%;
-  max-width: 100%;
+  width: 50%;
+  max-width: 50%;
   appearance: none;
   padding: 10px 35px 10px 15px;
   font-size: 16px;
@@ -184,27 +184,27 @@ html {
 /* Жёсткий фикс для выпадающего списка */
 .drug__section {
   position: relative;
-  max-width: 100vw !important;
+  max-width: 50vw !important;
   margin: 0 -10px !important;
   padding: 0 10px !important;
 
   select {
     transform: scale(0.98) !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
+    width: 50vw !important;
+    max-width: 50vw !important;
     margin-left: -10px !important;
     padding-left: 15px !important;
     border: 2px solid red !important; /* Для визуального контроля */
 
     option {
-      max-width: 95vw !important;
+      max-width: 50vw !important;
       white-space: pre-wrap !important;
       word-break: break-all !important;
       font-size: 12px !important;
     }
 
     optgroup {
-      max-width: 95vw !important;
+      max-width: 50vw !important;
     }
   }
 
@@ -220,7 +220,7 @@ html {
   option {
     white-space: normal !important;
     word-wrap: break-word !important;
-    max-width: 100vw !important;
+    max-width: 50vw !important;
     padding: 8px 12px !important;
     line-height: 1.4 !important;
   }
