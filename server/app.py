@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+from flasgger import Swagger
 import requests
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_cors import CORS
@@ -6,6 +7,9 @@ import sqlite3
 import hashlib
 from antipyretic_calculator import calculateAntipyreticDosage
 import os
+from creds import *
+import re
+from contextlib import closing
 from dotenv import load_dotenv
 
 ##
@@ -341,8 +345,8 @@ def initialize_database():
 
  # # Список пользователей
  #        technical_users = [
- #            ('user1', 'user1@example.com', 'password123', 0, None),  # Обычный пользователь
- #            ('yandex_user', 'yandex_user@example.com', 'password123', 1, '123456789')  # Яндекс-пользователь
+ #            ('user1', 'user1@example.com', 'b6ad34b0b6b7e38f878a513b3f7927ebeb4cffb01aeb6d9fd9f9ad67fbc76517', 0, None),  # Обычный пользователь qwerty1
+ #            ('yandex_user', 'yandex_user@example.com', 'b6ad34b0b6b7e38f878a513b3f7927ebeb4cffb01aeb6d9fd9f9ad67fbc76517', 1, '123456789')  # Яндекс-пользователь qwerty1
  #        ]
  #        # Вставляем пользователей в таблицу
  #        cursor.executemany(
@@ -378,42 +382,90 @@ def generate_id():
 def remove_book(book_id):
     global BOOKS
     BOOKS = [book for book in BOOKS if book['id'] != book_id]
+###############################################################
 
 
-# Регистрация нового пользователя
-#@app.route('/api/register', methods=['POST'])
-#def register_user():
- #   data = request.get_json()
-  #  username = data.get('username')
-   # password = data.get('password')
-    #if not username or not password:
-     #   return jsonify({'status': 'error', 'message': 'Username and password are required'}), 400
-    #USERS.append({'username': username, 'password': password})
-    #return jsonify({'status': 'success', 'message': 'User registered successfully'}), 201
+
+# @app.route('/api/register', methods=['POST'])
+# def register_user():
+#     conn = sqlite3.connect('myapp.db')
+#     cursor = conn.cursor()
+#     data = request.get_json()
+#     username = data.get('username')
+#     password = data.get('password')
+#     email = data.get('email')
+#
+#     if not username or not password:
+#         return jsonify({'message': 'Username and password are required'}), 400
+#
+#     hashed_password = hashlib.sha256(password.encode()).hexdigest()
+#     cursor.execute("SELECT id FROM users WHERE username=?", (username,))
+#     if cursor.fetchone():
+#         return jsonify({'message': 'User already exists'}), 400
+#     ##ДОБАВИТЬ ПРОВЕРКУ ПО ПОЧТЕ НА УНИКАЛЬНОСТЬ
+#
+#     cursor.execute("INSERT INTO users (username,email, password) VALUES (?, ?, ?)", (username, email, hashed_password))
+#     conn.commit()
+#
+#     return jsonify({'message': 'User registered successfully'}), 201
+
+
+def validate_input(data):
+    if not all(data.values()):
+        return ERRORS['fields_required']
+
+    username, email, password = data['username'], data['email'], data['password']
+
+    if not 3 <= len(username) <= 30:
+        return ERRORS['username_length']
+    if not VALIDATORS['username'].match(username):
+        return ERRORS['username_format']
+    if not VALIDATORS['email'].match(email):
+        return ERRORS['email_format']
+    if not 8 <= len(password) <= 30:
+        return ERRORS['password_length']
+    if not VALIDATORS['password'].match(password):
+        return ERRORS['password_strength']
+
+    return None
+
 
 @app.route('/api/register', methods=['POST'])
 def register_user():
-    conn = sqlite3.connect('myapp.db')
-    cursor = conn.cursor()
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
-    email = data.get('email')
+    try:
+        data = {
+            'username': request.json.get('username', '').strip(),
+            'email': request.json.get('email', '').strip(),
+            'password': request.json.get('password', '')
+        }
 
-    if not username or not password:
-        return jsonify({'message': 'Username and password are required'}), 400
+        if error := validate_input(data):
+            return jsonify({'message': error[0]}), error[1]
 
-    hashed_password = hashlib.sha256(password.encode()).hexdigest()
-    cursor.execute("SELECT id FROM users WHERE username=?", (username,))
-    if cursor.fetchone():
-        return jsonify({'message': 'User already exists'}), 400
-    ##ДОБАВИТЬ ПРОВЕРКУ ПО ПОЧТЕ НА УНИКАЛЬНОСТЬ
+        with closing(sqlite3.connect('myapp.db')) as conn:
+            with conn:  # Автокоммит
+                cursor = conn.cursor()
 
-    cursor.execute("INSERT INTO users (username,email, password) VALUES (?, ?, ?)", (username, email, hashed_password))
-    conn.commit()
+                # Проверка уникальности
+                if cursor.execute("SELECT 1 FROM users WHERE username = ?",
+                                  (data['username'],)).fetchone():
+                    return jsonify({'message': ERRORS['username_exists'][0]}), 409
 
-    return jsonify({'message': 'User registered successfully'}), 201
+                if cursor.execute("SELECT 1 FROM users WHERE email = ?",
+                                  (data['email'],)).fetchone():
+                    return jsonify({'message': ERRORS['email_exists'][0]}), 409
 
+                # Создание пользователя
+                cursor.execute(
+                    "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+                    (data['username'], data['email'],
+                     hashlib.sha256(data['password'].encode()).hexdigest())
+                )
+
+        return jsonify({'message': 'User registered successfully'}), 201
+
+    except sqlite3.Error as e:
+        return jsonify({'message': ERRORS['db_error'][0]}), 500
 
 
 
@@ -547,10 +599,10 @@ def calculate_dosage():
 #############
 @app.route('/api/calculation-history/', methods=['GET'])
 def get_calculation_history():
-    user_id = request.args.get('user_id')  # Обязательный параметр
-    category_name = request.args.get('category_name')  # Необязательный
-    date_from = request.args.get('date_from')  # Необязательный
-    date_to = request.args.get('date_to')  # Необязательный
+    user_id = request.args.get('user_id')
+    category_name = request.args.get('category_name', default=None, type=str)
+    date_from = request.args.get('date_from', default=None, type=str)
+    date_to = request.args.get('date_to', default=None, type=str)
 
     # Проверяем наличие обязательного параметра
     if not user_id:
@@ -672,6 +724,17 @@ def single_book(book_id):
 if __name__ == '__main__':
     # Инициализация базы данных
     initialize_database()
+    app.config['SWAGGER'] = {
+        'title': 'Calculator API',
+        'host': 'localhost:8080',
+        'uiversion': 3,
+        'specs_route': '/apidocs/',
+        'swagger_ui_bundle_js': 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.10.3/swagger-ui-bundle.js',
+        'swagger_ui_standalone_preset_js': 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.10.3/swagger-ui-standalone-preset.js',
+        'swagger_ui_css': 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.10.3/swagger-ui.css',
+        'jquery_js': 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js'
+    }
+    Swagger(app, template_file='swagger.yaml')
 
     # Настройка JWT
     app.config['JWT_SECRET_KEY'] = 'your-secret-key'  # Замените 'your-secret-key' на ваш секретный ключ

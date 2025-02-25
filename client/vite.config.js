@@ -1,12 +1,16 @@
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import { fileURLToPath, URL } from 'node:url'
-import vuetify from 'vite-plugin-vuetify'
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import { fileURLToPath, URL } from 'node:url';
+import vuetify from 'vite-plugin-vuetify';
 import path from 'path';
+import markdown from 'vite-plugin-markdown';
 
 export default defineConfig({
   plugins: [
-    vue(),
+    vue({
+      include: [/\.vue$/, /\.md$/] // Разрешаем обработку .md файлов как компонентов
+    }),
+    markdown(),
     vuetify({
       autoImport: true,
     }),
@@ -17,13 +21,12 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
     },
   },
-    server: {
+  server: {
     port: 8080,
-    //прокси только для локального использования, в проде весь трафик идет через nginx
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:5000'
+        target: 'http://127.0.0.1:5000',
       },
     },
-  }
-})
+  },
+});

@@ -6,6 +6,7 @@ import Pediatric from '../components/Pediatric.vue';
 import CalculationHistory from '../components/CalculationHistory.vue';
 import TokenHandler from '../components/TokenHandler.vue';
 import AuthButtons from '../components/AuthButtons.vue';
+import Article from '../components/Article.vue';
 
 const routes = [
   {

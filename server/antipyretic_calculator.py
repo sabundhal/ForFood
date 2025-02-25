@@ -107,7 +107,7 @@ def fetchDrugInfo(drug_id):
     try:
         conn = sqlite3.connect('myapp.db')
         cursor = conn.cursor()
-        cursor.execute('''SELECT name, category_id, mls_var, mgs_var, mls_max, mgs_max, high_range, high_modifier, mls_max_high, mgs_max_high, instructions, nzf_link, number_of_times_a_day, range1_dose
+        cursor.execute('''SELECT name, category_id, mls_var, mgs_var, mls_max, mgs_max, high_range, high_modifier, mls_max_high, mgs_max_high, instructions, nzf_link, number_of_times_a_day, range1_dose,range2_dose
                                  FROM drugs
                                  WHERE id = ?''', (drug_id,))
         drug = cursor.fetchone()
@@ -127,7 +127,8 @@ def fetchDrugInfo(drug_id):
             'instructions': drug[10],
             'nzf_link': drug[11],
             'number_of_times_a_day': drug[12],
-            'range1_dose': drug[13]
+            'range1_dose': drug[13],
+            'range2_dose': drug[14]
         }
     except sqlite3.Error as e:
         raise ValueError(f"Database error: {str(e)}")
@@ -146,16 +147,16 @@ def calculateDosage(weight, drug_info):
         'standard_dose_mg': None,  # Стандартная доза на одну дозу (мг)
         'high_dose_ml': None,  # Высокий объем на одну дозу (мл)
         'high_dose_mg': None,  # Высокая доза на одну дозу (мг)
-        'max_dose_ml': drug_info.get('mls_max'),  # Максимальный объем в сутки (мл)
-        'max_dose_mg': drug_info.get('mgs_max'),  # Максимальная доза в сутки (мг)
+        'max_dose_ml': None,  # Максимальный объем в сутки (мл)
+        'max_dose_mg': None,  # Максимальная доза в сутки (мг)
         'suppositories_min': None,  # Минимальное количество свечей
         'suppositories_high': None  # Максимальное количество свечей
     }
 
+
     # Проверка на ректальные свечи (category_id = 6)
     if drug_info.get('category_id') == 6:
         # Разовая доза: 5-10 мг/кг
-        mgs_max = drug_info.get('mgs_max', None)
         mgs_var = drug_info.get('mgs_var', None)
         dose_min = mgs_var * weight  # Минимальная доза (мг)
 
@@ -178,6 +179,10 @@ def calculateDosage(weight, drug_info):
 
 
     else:
+
+        # Рассчитываем максимальные суточные дозы НОВЫЙ РАСЧЕТ
+        if drug_info.get('mgs_max') is not None:
+            result['max_dose_ml'] = (weight * drug_info['mgs_max']) / drug_info['range2_dose']
         # Стандартный расчет для других категорий
         result['standard_dose_ml'] = weight * drug_info.get('mls_var', None) if drug_info.get('mls_var') is not None else None
         result['standard_dose_mg'] = weight * drug_info.get('mgs_var', None) if drug_info.get('mgs_var') is not None else None
@@ -188,6 +193,7 @@ def calculateDosage(weight, drug_info):
             mls_var = drug_info.get('mls_var', None)
             high_modifier = drug_info.get('high_modifier', None)
             mls_max = drug_info.get('mls_max', None)
+
 
             # Рассчитываем высокую дозу (мл), если все данные есть
             if mls_var is not None and high_modifier is not None:
@@ -278,7 +284,7 @@ def calculateAntipyreticDosage(data):
         'standard_dose_mg': result['standard_dose_mg'],  # Стандартная доза (мг)
         'high_dose_ml': result['high_dose_ml'],  # Высокий объем (мл)
         'high_dose_mg': result['high_dose_mg'],  # Высокая доза (мг)
-        'max_dose_ml': drug_info['mls_max'],  # Максимальный объем (мл)
+        'max_dose_ml': result['max_dose_ml'],  # Максимальный объем (мл)
         'max_dose_mg': drug_info['mgs_max'],  # Максимальная доза (мг)
         'calculation_id': calculation_id,  # ID расчета
         'instructions': drug_info['instructions'],

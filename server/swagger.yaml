@@ -1,0 +1,389 @@
+swagger: '2.0'
+info:
+  title: Calculator API
+  description: API для управления пользователями, аутентификацией и расчетами
+  version: 1.0.0
+host: localhost:8080
+basePath: /
+schemes:
+  - http
+paths:
+  /api/register:
+    post:
+      summary: Регистрация пользователя
+      description: Регистрирует нового пользователя.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              username:
+                type: string
+                example: "user123"
+              password:
+                type: string
+                example: "password123"
+              email:
+                type: string
+                example: "user@example.com"
+            required:
+              - username
+              - password
+              - email
+      responses:
+        201:
+          description: Пользователь успешно зарегистрирован
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "User registered successfully"
+        400:
+          description: Ошибка валидации
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                examples:
+                  required: "Username and password are required"
+                  exists: "User already exists"
+                  email_exists: "Email already exists"
+
+  /api/login:
+    post:
+      summary: Вход пользователя
+      description: Аутентифицирует пользователя и возвращает JWT токен.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              username:
+                type: string
+                example: "test4examplecom"
+              password:
+                type: string
+                example: "qwertyQ1"
+            required:
+              - username
+              - password
+      responses:
+        200:
+          description: Успешный вход
+          schema:
+            type: object
+            properties:
+              access_token:
+                type: string
+                example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+              user_id:
+                type: integer
+                example: 1
+        400:
+          description: Неверные данные
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Username and password are required"
+        401:
+          description: Неверные учетные данные
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Invalid credentials"
+
+  /api/auth/yandex:
+    post:
+      summary: Авторизация через Яндекс
+      description: Авторизует пользователя через Яндекс OAuth.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+                example: "y0_AgAAAAA..."
+            required:
+              - token
+      responses:
+        200:
+          description: Успешная авторизация
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: true
+              user:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "123456"
+                  login:
+                    type: string
+                    example: "yandex_user"
+                  default_email:
+                    type: string
+                    example: "user@yandex.ru"
+        400:
+          description: Ошибка валидации
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Токен отсутствует"
+        500:
+          description: Ошибка сервера
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Internal server error"
+
+  /api/drugs:
+    get:
+      summary: Получить список препаратов
+      description: Возвращает список препаратов, сгруппированных по категориям.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Успешный запрос
+          schema:
+            type: object
+            additionalProperties:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: "Paracetamol"
+                  tablet_only:
+                    type: boolean
+                    example: false
+                  mls_var:
+                    type: boolean
+                    example: true
+                  instructions:
+                    type: string
+                    example: "Take with water."
+        500:
+          description: Ошибка сервера
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Failed to fetch drugs from the database."
+
+  /api/calculate:
+    post:
+      summary: Рассчитать дозировку
+      description: Рассчитывает дозировку препарата на основе входных данных.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              user_id:
+                type: integer
+                example: 3
+              drug_id:
+                type: integer
+                example: 3
+              weight:
+                type: number
+                format: float
+                example: 20
+            required:
+              - user_id
+              - drug_id
+              - weight
+      responses:
+        200:
+          description: Успешный расчет
+          schema:
+            type: object
+            properties:
+              calculation_id:
+                type: integer
+                example: 94
+              high_dose_mg:
+                type: number
+                format: float
+                example: 200.0
+              high_dose_ml:
+                type: number
+                format: float
+                example: 10.0
+              instructions:
+                type: string
+                example: "Противопоказания: масса тела менее 5 кг..."
+              max_dose_mg:
+                type: number
+                format: float
+                example: 200.0
+              max_dose_ml:
+                type: number
+                format: float
+                example: 10.0
+              number_of_times_a_day:
+                type: string
+                example: "Дозировка для детей зависит от возраста..."
+              nzf_link:
+                type: string
+                example: "https://grls.rosminzdrav.ru/Grls_View_v2.aspx?..."
+              standard_dose_mg:
+                type: number
+                format: float
+                example: 100.0
+              standard_dose_ml:
+                type: number
+                format: float
+                example: 5.0
+              suppositories_high:
+                type: number
+                format: float
+                nullable: true
+                example: null
+              suppositories_min:
+                type: number
+                format: float
+                nullable: true
+                example: null
+        400:
+          description: Ошибка валидации
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Invalid input data"
+        500:
+          description: Ошибка сервера
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Internal server error"
+
+  /api/calculation-history/:
+    get:
+      summary: Получить историю расчетов
+      description: Возвращает историю расчетов для пользователя.
+      produces:
+        - application/json
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          type: integer
+          example: 1
+        - name: category_name
+          in: query
+          type: string
+          example: "Antipyretics"
+        - name: date_from
+          in: query
+          type: string
+          format: date
+          example: "2023-01-01"
+        - name: date_to
+          in: query
+          type: string
+          format: date
+          example: "2023-12-31"
+      responses:
+        200:
+          description: Успешный запрос
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 1
+                user_id:
+                  type: integer
+                  example: 1
+                drug_name:
+                  type: string
+                  example: "Paracetamol"
+                calculation_type:
+                  type: string
+                  example: "Antipyretics"
+                weight:
+                  type: number
+                  example: 30
+                standard_dose_ml:
+                  type: number
+                  example: 5
+                high_dose_ml:
+                  type: number
+                  example: 10
+                suppositories_high:
+                  type: number
+                  example: 2
+                suppositories_min:
+                  type: number
+                  example: 1
+                created_at:
+                  type: string
+                  format: date-time
+                  example: "2023-10-01T12:00:00Z"
+        400:
+          description: Ошибка валидации
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "user_id is required"
+        500:
+          description: Ошибка сервера
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Internal server error"

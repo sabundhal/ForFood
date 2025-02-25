@@ -6,15 +6,22 @@
         <hr><br>
         <alert :message="message" v-if="showMessage"></alert>
         <form @submit.prevent="handleLoginSubmit">
+          <!-- Исправленное поле username -->
           <div class="mb-3">
-            <label for="loginEmail" class="form-label">Username:</label>
+            <label for="loginUsername" class="form-label">Имя пользователя:</label>
             <input
-              type="email"
+              type="text"
               class="form-control"
-              id="loginEmail"
+              id="loginUsername"
               v-model="loginForm.username"
-              placeholder="Введите email">
+              placeholder="Введите имя пользователя"
+            />
+            <div class="form-text text-muted">
+              Допустимые символы: буквы (A-Z, a-z), цифры (0-9), дефисы (-) и подчёркивания (_)
+            </div>
           </div>
+
+          <!-- Поле пароля с подсказкой -->
           <div class="mb-3">
             <label for="loginPassword" class="form-label">Пароль:</label>
             <input
@@ -22,8 +29,11 @@
               class="form-control"
               id="loginPassword"
               v-model="loginForm.password"
-              placeholder="Введите пароль">
+              placeholder="Введите пароль"
+            />
+            <div class="form-text text-muted">Минимальная длина: 8 символов</div>
           </div>
+
           <div class="btn-group" role="group">
             <button
               type="submit"
@@ -168,27 +178,45 @@ export default {
     },
 
     loginUser(payload) {
-      const path = `/api/login`;
-      axios.post(path, payload)
-        .then((response) => {
-          const token = response.data.access_token;
-          const user_id = response.data.user_id;
-          localStorage.setItem('access_token', token);
-          localStorage.setItem('user_name', this.loginForm.username);
-          localStorage.setItem('user_id', user_id);
-          this.message = 'Вход выполнен успешно!';
-          this.showMessage = true;
-          this.resetForm();
-          // Отправляем событие
-          this.$root.$eventBus.dispatchEvent(new CustomEvent('login-success'));
-          this.$router.push({ name: 'Main' });
-        })
-        .catch((error) => {
-          console.error(error);
-          this.showMessage = false;
-          this.message = 'Ошибка при входе. Проверьте правильность email и пароля.';
-        });
-    },
+    const path = `/api/login`;
+    axios.post(path, payload)
+      .then((response) => {
+        const token = response.data.access_token;
+        const user_id = response.data.user_id;
+        localStorage.setItem('access_token', token);
+        localStorage.setItem('user_name', this.loginForm.username);
+        localStorage.setItem('user_id', user_id);
+
+        this.message = 'Вход выполнен успешно!';
+        this.showMessage = true;
+
+        this.resetForm();
+        this.$root.$eventBus.dispatchEvent(new CustomEvent('login-success'));
+        this.$router.push({ name: 'Main' });
+      })
+      .catch((error) => {
+        console.error('Ошибка входа:', error);
+        this.showMessage = true;
+
+        // Основная обработка ошибок
+        if (error.response) {
+          // Сервер ответил с кодом ошибки
+          if (error.response.status === 401) {
+            this.message = error.response.data?.message || 'Неверное имя пользователя или пароль';
+          } else {
+            this.message = `Ошибка сервера (${error.response.status})`;
+          }
+        }
+        // Ошибка сети или не удалось отправить запрос
+        else if (error.request) {
+          this.message = 'Нет ответа от сервера. Проверьте подключение';
+        }
+        // Другие ошибки
+        else {
+          this.message = 'Ошибка при выполнении запроса';
+        }
+      });
+  },
 
     resetForm() {
       this.loginForm.username = '';

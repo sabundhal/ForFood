@@ -106,7 +106,7 @@ html {
 .result__section {
   display: grid;
   gap: 15px;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   margin: 15px 0;
 
   > div {
@@ -118,6 +118,18 @@ html {
       padding: 10px;
     }
   }
+}
+
+.result__section-max-mgs-label {
+    font-weight: 700;
+    color: #dc3545;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
 }
 
 // Кнопки
@@ -150,6 +162,9 @@ html {
 // Дополнительные адаптивные правки
 .weight__section-label,
 .result__section-mls-label,
+.result__section-max-mgs-label,
+.result__section-supp-min-label,
+.result__section-supp-high-label,
 .result__section-mgs-label {
   @media (max-width: 480px) {
     font-size: 0.9rem;
@@ -220,7 +235,7 @@ html {
   option {
     white-space: normal !important;
     word-wrap: break-word !important;
-    max-width: 50vw !important;
+    max-width: 90vw !important;
     padding: 8px 12px !important;
     line-height: 1.4 !important;
   }
@@ -281,4 +296,23 @@ html {
       }
     }
   }
+}
+
+.article-preview {
+  cursor: pointer;
+  padding: 10px;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+  transition: background-color 0.3s;
+}
+
+.article-preview:hover {
+  background-color: #f0f0f0;
+}
+
+.article-content {
+  padding: 10px;
+  border: 1px solid #eee;
+  background-color: #f9f9f9;
+  margin-top: 5px;
 }

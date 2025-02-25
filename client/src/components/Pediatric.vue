@@ -51,7 +51,8 @@
         <div class="calculate__section">
           <input type="button" id="calcbutton" value="Рассчитать" @click=calculateDosage() />
         </div>
-
+         <!-- Сообщения об ошибках -->
+    <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
        <div class="result__section">
         <div class="result__section-mls" v-if="standard_dose_ml">
             <div class="result__section-mls-item result__section-mls-label">
@@ -75,13 +76,13 @@
             <div class="result__section-max-mgs-item result__section-max-mgs-label">
                 Максимальная доза в день <br />!!!ПРЕВЫШЕНИЕ НЕДОПУСТИМО!!!
             </div>
-            <div class="result__ssection-max-mgs-item result__section-max-mgs-result" id="ResultMgs" style="display: block">
+            <div class="result__section-max-mgs-item result__section-max-mgs-result" id="ResultMgs" style="display: block">
                 {{ max_dose_ml }} <!-- Отображаем значение мг -->
             </div>
 
         </div>
         <div class="result__section-supp-min"  v-if="suppositories_min">
-            <div class="result__ssection-supp-min-item result__section-supp-min-label">
+            <div class="result__section-supp-min-item result__section-supp-min-label">
                 Обычная доза <br />ректальных суппозиториев (шт)
             </div>
             <div class="result__section-supp-min-item result__section-supp-min-result" id="Result" style="display: block">
@@ -101,8 +102,7 @@
 
       </form>
     </div>
-        <!-- Сообщения об ошибках -->
-    <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
+
 
     <div class="info__section" v-if="nzf_link || number_of_times_a_day || instructions">
   <!-- Инструкции по применению -->
