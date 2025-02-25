@@ -1,11 +1,16 @@
 
 import re
+import os
 # Регулярные выражения для валидации
 VALIDATORS = {
     'username': re.compile(r'^[a-zA-Z0-9_-]{3,30}$'),
     'email': re.compile(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'),
-    'password': re.compile(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,30}$')
+    'password': re.compile(r'^[a-zA-Z0-9_-]{8,30}$')
 }
+
+# Загрузите Client Secret из переменных окружения
+CLIENT_ID = os.getenv("YANDEX_CLIENT_ID")
+CLIENT_SECRET = os.getenv("YANDEX_CLIENT_SECRET")
 
 ERRORS = {
     'fields_required': ('All fields are required', 400),

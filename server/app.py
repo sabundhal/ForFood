@@ -374,40 +374,17 @@ def get_db_connection():
     cursor = conn.cursor()
     return cursor
 
-# Генератор нового ID
-def generate_id():
-    return max(book['id'] for book in BOOKS) + 1 if BOOKS else 1
-
-# Удаление книги по ID
-def remove_book(book_id):
-    global BOOKS
-    BOOKS = [book for book in BOOKS if book['id'] != book_id]
+# # Генератор нового ID
+# def generate_id():
+#     return max(book['id'] for book in BOOKS) + 1 if BOOKS else 1
+#
+# # Удаление книги по ID
+# def remove_book(book_id):
+#     global BOOKS
+#     BOOKS = [book for book in BOOKS if book['id'] != book_id]
 ###############################################################
 
 
-
-# @app.route('/api/register', methods=['POST'])
-# def register_user():
-#     conn = sqlite3.connect('myapp.db')
-#     cursor = conn.cursor()
-#     data = request.get_json()
-#     username = data.get('username')
-#     password = data.get('password')
-#     email = data.get('email')
-#
-#     if not username or not password:
-#         return jsonify({'message': 'Username and password are required'}), 400
-#
-#     hashed_password = hashlib.sha256(password.encode()).hexdigest()
-#     cursor.execute("SELECT id FROM users WHERE username=?", (username,))
-#     if cursor.fetchone():
-#         return jsonify({'message': 'User already exists'}), 400
-#     ##ДОБАВИТЬ ПРОВЕРКУ ПО ПОЧТЕ НА УНИКАЛЬНОСТЬ
-#
-#     cursor.execute("INSERT INTO users (username,email, password) VALUES (?, ?, ?)", (username, email, hashed_password))
-#     conn.commit()
-#
-#     return jsonify({'message': 'User registered successfully'}), 201
 
 
 def validate_input(data):
@@ -494,9 +471,7 @@ def login_user():
     return jsonify(access_token=access_token, user_id=user_id), 200
 
 ###yandex
-# Загрузите Client Secret из переменных окружения
-CLIENT_ID = os.getenv("YANDEX_CLIENT_ID")
-CLIENT_SECRET = os.getenv("YANDEX_CLIENT_SECRET")
+
 
 @app.route('/api/auth/yandex', methods=['POST'])
 def handle_yandex_auth():
