@@ -10,9 +10,11 @@ from antipyretic_calculator import calculateAntipyreticDosage
 from creds import *
 from data import *
 from sqlalchemy.exc import IntegrityError
+from database import DatabaseManager  # Импортируйте ваш класс DatabaseManager
+from models import Base  # Импортируйте Base из models.py
 
-# Инициализация DatabaseManager
-db_manager = DatabaseManager()
+db_manager = DatabaseManager()  # Создайте экземпляр DatabaseManager
+    # Здесь вы можете добавить другие операции, если необходимо
 
 # Создание Flask-приложения
 app = Flask(__name__)
@@ -48,131 +50,89 @@ def validate_input(data):
     return None
 
 
-
-
 @app.route('/api/register', methods=['POST'])
 def register_user():
+    db_manager = DatabaseManager()  # Создайте экземпляр DatabaseManager
+    user_manager = UserManager(db_manager)  # Передайте его в UserManager
     try:
         data = {
             'username': request.json.get('username', '').strip(),
             'email': request.json.get('email', '').strip(),
             'password': request.json.get('password', '')
         }
-
         # Валидация данных
         if error := validate_input(data):
             return jsonify({'message': error[0]}), error[1]
-
-        # Создание сессии
-        session = db_manager.Session()
-
         # Проверка уникальности username и email
-        if session.query(User).filter_by(username=data['username']).first():
-            session.close()
+        user_by_username, user_by_email = user_manager.user_exists(data['username'], data['email'])
+        if user_by_username:
             return jsonify({'message': ERRORS['username_exists'][0]}), 409
-
-        if session.query(User).filter_by(email=data['email']).first():
-            session.close()
+        if user_by_email:
             return jsonify({'message': ERRORS['email_exists'][0]}), 409
-
         # Создание нового пользователя
-        new_user = User(
-            username=data['username'],
-            email=data['email'],
-            password=hashlib.sha256(data['password'].encode()).hexdigest()
-        )
-
-        # Добавление пользователя в сессию и сохранение в БД
-        session.add(new_user)
-        session.commit()
-
+        new_user = user_manager.create_user(data['username'], data['email'], hashlib.sha256(data['password'].encode()).hexdigest())
         return jsonify({'message': 'User registered successfully'}), 201
-
-    except IntegrityError as e:
-        session.rollback()
-        return jsonify({'message': ERRORS['db_error'][0]}), 500
     except Exception as e:
-        session.rollback()
-        return jsonify({'message': ERRORS['db_error'][0]}), 500
-    finally:
-        session.close()
+        logging.error(f"Registration error: {e}")  # Логируем ошибку
+        return jsonify({'message': 'Database error', 'details': str(e)}), 500
 
 
 @app.route('/api/login', methods=['POST'])
 def login_user():
-    conn = sqlite3.connect('myapp.db')
-    cursor = conn.cursor()
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
+    db_manager = DatabaseManager()  # Создайте экземпляр DatabaseManager
+    user_manager = UserManager(db_manager)  # Передайте его в UserManager
+    try:
+        data = request.get_json()
+        username = data.get('username')
+        password = data.get('password')
 
-    if not username or not password:
-        return jsonify({'message': 'Username and password are required'}), 400
+        if not username or not password:
+            return jsonify({'message': 'Username and password are required'}), 400
 
-    hashed_password = hashlib.sha256(password.encode()).hexdigest()
-    cursor.execute("SELECT id FROM users WHERE username=? AND password=?", (username, hashed_password))
-    user = cursor.fetchone()
+        user = user_manager.authenticate_user(username, password)
+        if not user:
+            return jsonify({'message': 'Неверные учетные данные'}), 401
 
-    if not user:
-        return jsonify({'message': 'Неверные учетные данные'}), 401
         # Получаем user_id
-    user_id = user[0]
-    access_token = create_access_token(identity=username)
-    # Возвращаем токен и user_id
-    return jsonify(access_token=access_token, user_id=user_id), 200
+        user_id = user.id
+        access_token = create_access_token(identity=username)  # Генерация токена
+
+        # Возвращаем токен и user_id
+        return jsonify(access_token=access_token, user_id=user_id), 200
+    except Exception as e:
+        logging.error(f"Login error: {e}")  # Логируем ошибку
+        return jsonify({'message': 'Database error', 'details': str(e)}), 500
 
 
 @app.route('/api/auth/yandex', methods=['POST'])
 def handle_yandex_auth():
+    db_manager = DatabaseManager()  # Создайте экземпляр DatabaseManager
+    user_manager = UserManager(db_manager)  # Передайте его в UserManager
     token = request.json.get('token')
-
     if not token:
         return jsonify({"error": "Токен отсутствует"}), 400
-
     try:
         # Получаем данные пользователя
         user_info = get_user_info(token)
         yandex_id = user_info["id"]  # Уникальный ID Яндекса
-
-        # Создание сессии
-        session = db_manager.Session()
-
         # Проверяем, есть ли пользователь в БД
-        user = session.query(User).filter_by(yandex_id=yandex_id).first()
-
+        user = user_manager.get_user_by_yandex_id(yandex_id)
         if not user:
             # Пользователя нет, создаем его
             username = user_info.get("login")
             email = user_info.get("default_email", user_info.get("emails", [None])[0])
             password = yandex_id  # Пароль = yandex_id (или можно оставить NULL)
             hashed_password = hashlib.sha256(password.encode()).hexdigest()
-
-            new_user = User(
-                username=username,
-                email=email,
-                password=hashed_password,
-                is_yandex=1,
-                yandex_id=yandex_id
-            )
-
-            # Добавляем пользователя в сессию и сохраняем в БД
-            session.add(new_user)
-            session.commit()
-
+            new_user = user_manager.create_user(username, email, hashed_password, is_yandex=1, yandex_id=yandex_id)
             # Получаем только что созданного пользователя
-            user = session.query(User).filter_by(yandex_id=yandex_id).first()
-
+            user = user_manager.get_user_by_yandex_id(yandex_id)
         return jsonify({"success": True, "user": user_info})
-
     except IntegrityError as e:
-        session.rollback()
+        logging.error(f"IntegrityError: {e}")
         return jsonify({"error": "Ошибка базы данных: пользователь уже существует"}), 500
     except Exception as e:
-        session.rollback()
+        logging.error(f"Error during Yandex auth: {e}")
         return jsonify({"error": str(e)}), 500
-    finally:
-        session.close()
-
 
 
 def get_user_info(token):
@@ -296,7 +256,7 @@ def get_calculation_history():
 # Запуск приложения
 if __name__ == '__main__':
     # Инициализация базы данных
-    initialize_database()
+    db_manager
     #populate_initial_data()
     app.config['SWAGGER'] = {
         'title': 'Calculator API',
