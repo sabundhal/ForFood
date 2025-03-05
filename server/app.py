@@ -5,6 +5,10 @@ import requests
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_cors import CORS
 import sqlite3
+from flask import Flask, request, jsonify
+from pydantic import ValidationError
+from schemas import ChildCreate  # Импортируйте вашу схему Pydantic
+import logging
 import hashlib
 from antipyretic_calculator import calculateAntipyreticDosage
 from creds import *
@@ -18,14 +22,6 @@ db_manager = DatabaseManager()  # Создайте экземпляр DatabaseMa
 
 # Создание Flask-приложения
 app = Flask(__name__)
-
-
-# Подключение к базе данных
-def get_db_connection():
-    conn = sqlite3.connect('myapp.db', check_same_thread=False)
-    conn.row_factory = sqlite3.Row  # Устанавливаем row_factory для доступа по именам колонок
-    cursor = conn.cursor()
-    return cursor
 
 
 
@@ -95,7 +91,7 @@ def login_user():
 
         # Получаем user_id
         user_id = user.id
-        access_token = create_access_token(identity=username)  # Генерация токена
+        access_token = create_access_token(identity=user_id)  # Генерация токена
 
         # Возвращаем токен и user_id
         return jsonify(access_token=access_token, user_id=user_id), 200
@@ -147,6 +143,117 @@ def get_user_info(token):
         return response.json()
     else:
         raise Exception(f"Ошибка: {response.status_code}, {response.text}")
+
+
+@app.route('/api/user', methods=['GET'])
+@jwt_required()  # Проверка токена
+def get_user_info():
+    user_id = get_jwt_identity()  # Получаем ID пользователя из токена
+    db_manager = DatabaseManager()  # Создаем экземпляр DatabaseManager
+    user_manager = UserManager(db_manager)  # Передаем его в UserManager
+
+    try:
+        user = user_manager.get_user_by_id(user_id)  # Используем метод из UserManager
+        if not user:
+            return jsonify({'message': 'Пользователь не найден'}), 404
+
+        # Преобразуем объект User в словарь для JSON
+        user_data = {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "is_yandex": user.is_yandex,
+            "yandex_id": user.yandex_id
+        }
+        return jsonify(user_data), 200
+    except Exception as e:
+        return jsonify({'message': 'Database error', 'details': str(e)}), 500
+
+
+# @app.route('/api/children', methods=['POST'])
+# def create_child_profile():
+#     db_manager = DatabaseManager()  # Создайте экземпляр DatabaseManager
+#     child_manager = ChildManager(db_manager)  # Передайте его в ChildManager
+#     try:
+#         # Получаем данные из запроса
+#         data = request.json
+#         # Валидация данных с помощью Pydantic
+#         child_data = ChildCreate(**data)
+#
+#         # Извлекаем user_id и аллергенов из запроса
+#         user_id = request.json.get('user_id')
+#         allergens = request.json.get('allergens', [])
+#
+#         # Создание нового профиля ребенка
+#         new_child = child_manager.create_child(
+#             user_id=user_id,
+#             name=child_data.name,
+#             birth_date=child_data.birth_date,
+#             gender=child_data.gender,
+#             height=child_data.height,
+#             weight=child_data.weight,
+#             allergens=allergens
+#         )
+#         return jsonify({'message': 'Профиль ребенка создан успешно', 'child_id': new_child.id}), 201
+#     except ValidationError as e:
+#         logging.error(f"Validation error: {e}")  # Логируем ошибку валидации
+#         return jsonify({'message': 'Ошибка валидации', 'details': e.errors()}), 400
+#     except Exception as e:
+#         logging.error(f"Error creating child profile: {e}")  # Логируем ошибку
+#         return jsonify({'message': 'Ошибка базы данных', 'details': str(e)}), 500
+#
+#
+# @app.route('/api/children', methods=['GET'])
+# @jwt_required()
+# def get_all_children():
+#     user_id = get_jwt_identity()  # Получаем ID пользователя из токена
+#     db_manager = DatabaseManager()  # Создаем экземпляр DatabaseManager
+#     child_manager = ChildManager(db_manager)  # Передаем его в ChildManager
+#
+#     try:
+#         children = child_manager.get_all_children_for_user(user_id)  # Используем метод из ChildManager
+#         # Преобразуем объекты Child в словари для JSON
+#         children_data = [{
+#             "id": child.id,
+#             "name": child.name,
+#             "birth_date": child.birth_date.isoformat(),
+#             "gender": child.gender,
+#             "height": child.height,
+#             "weight": child.weight,
+#             "allergens": [{"id": allergen.id, "name": allergen.name} for allergen in child.allergens]
+#         } for child in children]
+#         return jsonify(children_data), 200
+#     except Exception as e:
+#         return jsonify({'message': 'Database error', 'details': str(e)}), 500
+#
+# @app.route('/api/children/<int:child_id>', methods=['GET'])
+# @jwt_required()
+# def get_child(child_id: int):
+#     user_id = get_jwt_identity()  # Получаем ID пользователя из токена
+#     db_manager = DatabaseManager()  # Создаем экземпляр DatabaseManager
+#     child_manager = ChildManager(db_manager)  # Передаем его в ChildManager
+#
+#     try:
+#         child = child_manager.get_child_by_id(user_id, child_id)  # Используем метод из ChildManager
+#         if not child:
+#             return jsonify({'message': 'Ребенок не найден'}), 404
+#
+#         # Преобразуем объект Child в словарь для JSON
+#         child_data = {
+#             "id": child.id,
+#             "name": child.name,
+#             "birth_date": child.birth_date.isoformat(),
+#             "gender": child.gender,
+#             "height": child.height,
+#             "weight": child.weight,
+#             "allergens": [{"id": allergen.id, "name": allergen.name} for allergen in child.allergens]
+#         }
+#         return jsonify(child_data), 200
+#     except Exception as e:
+#         return jsonify({'message': 'Database error', 'details': str(e)}), 500
+#
+#
+
 
 
 @app.route('/api/drugs', methods=['GET'])

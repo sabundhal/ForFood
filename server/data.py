@@ -1,7 +1,13 @@
 from datetime import datetime
 from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker, relationship, joinedload
+from sqlalchemy.exc import NoResultFound  # Для обработки ошибок
+from datetime import date
+from database import DatabaseManager
+from models import Child
+from schemas import ChildCreate
+from sqlalchemy.orm import joinedload
 import logging
 import hashlib
 from models import *
@@ -38,6 +44,24 @@ class UserManager:
         finally:
             session.close()
 
+    def get_user_by_id(self, user_id: int):
+        """
+        Возвращает информацию о пользователе по его ID.
+        :param user_id: ID пользователя.
+        :return: Объект пользователя или None, если пользователь не найден.
+        """
+        session = self.db_manager.get_session()
+        try:
+            user = session.query(User).filter(User.id == user_id).one()
+            return user
+        except NoResultFound:
+            return None
+        except Exception as e:
+            logging.error(f"Error fetching user: {e}")
+            raise
+        finally:
+            session.close()
+
     def user_exists(self, username, email):
         session = self.db_manager.get_session()
         try:
@@ -63,8 +87,102 @@ class UserManager:
         finally:
             session.close()
 
-
-
+# class ChildManager:
+#     def __init__(self, db_manager):
+#         self.db_manager = db_manager
+#
+#     def create_child(self, user_id: int, name: str, birth_date: str, gender: str, height: float, weight: float,
+#                      allergens: list):
+#         session = self.db_manager.get_session()
+#         try:
+#             # Преобразуем строку даты в объект date
+#             from datetime import datetime
+#             birth_date = datetime.strptime(birth_date, '%Y-%m-%d').date()
+#
+#             # Создаем объект ребенка
+#             child = Child(
+#                 user_id=user_id,
+#                 name=name,
+#                 birth_date=birth_date,
+#                 gender=gender,
+#                 height=height,
+#                 weight=weight
+#             )
+#             session.add(child)
+#             session.flush()  # Сохраняем ребенка, чтобы получить его ID, но не фиксируем транзакцию
+#
+#             # Привязываем аллергены к ребенку
+#             for allergen_id in allergens:
+#                 # Проверяем, существует ли аллерген
+#                 allergen = session.query(Ingredient).get(allergen_id)
+#                 if not allergen:
+#                     raise ValueError(f"Аллерген с ID {allergen_id} не найден")
+#                 child_allergen = ChildAllergen(child_id=child.id, ingredient_id=allergen_id)
+#                 session.add(child_allergen)
+#
+#             session.commit()  # Фиксируем все изменения
+#             session.refresh(child)  # Обновляем объект child
+#             return child
+#         except IntegrityError as e:
+#             session.rollback()
+#             logging.error(f"IntegrityError: {e}")
+#             raise
+#         except Exception as e:
+#             session.rollback()
+#             logging.error(f"Error creating child: {e}")
+#             raise
+#         finally:
+#             session.close()
+#
+#
+#
+#     def get_all_children_for_user(self, user_id: int):
+#         """
+#         Возвращает всех детей для указанного пользователя.
+#         :param user_id: ID пользователя.
+#         :return: Список детей.
+#         """
+#         session = self.db_manager.get_session()
+#         try:
+#             children = (
+#                 session.query(Child)
+#                 .options(joinedload(Child.allergens))  # Загружаем аллергены
+#                 .filter(Child.user_id == user_id)
+#                 .all()
+#             )
+#             return children
+#         except Exception as e:
+#             logging.error(f"Error fetching children: {e}")
+#             raise
+#         finally:
+#             session.close()
+#
+#     from sqlalchemy.orm import joinedload
+#
+#     def get_child_by_id(self, user_id: int, child_id: int):
+#         """
+#         Возвращает ребенка по ID, если он принадлежит указанному пользователю.
+#         :param user_id: ID пользователя.
+#         :param child_id: ID ребенка.
+#         :return: Ребенок или None, если не найден.
+#         """
+#         session = self.db_manager.get_session()
+#         try:
+#             child = (
+#                 session.query(Child)
+#                 .options(joinedload(Child.allergens))  # Загружаем аллергены
+#                 .filter(
+#                     Child.id == child_id,
+#                     Child.user_id == user_id
+#                 )
+#                 .first()
+#             )
+#             return child
+#         except Exception as e:
+#             logging.error(f"Error fetching child: {e}")
+#             raise
+#         finally:
+#             session.close()
 
 
 

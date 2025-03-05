@@ -6,6 +6,9 @@ from datetime import datetime
 from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, DateTime, ForeignKey, Date
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy import Column, Integer, String, Date, Float, DateTime, ForeignKey, Boolean, func
+from sqlalchemy.orm import relationship
+from sqlalchemy.ext.declarative import declarative_base
 
 
 Base = declarative_base()
@@ -36,6 +39,7 @@ class User(Base):
         return f"<User(id={self.id}, username={self.username}, email={self.email})>"
 
 # Таблица children
+
 class Child(Base):
     __tablename__ = 'children'
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -45,14 +49,32 @@ class Child(Base):
     gender = Column(String, nullable=False)
     height = Column(Float)
     weight = Column(Float)
+    # Отношение многие-ко-многим с Ingredient через таблицу child_allergens
+    allergens = relationship("Ingredient", secondary="child_allergens", back_populates="children")
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
-
-    # Связи
     user = relationship("User", back_populates="children")
 
+class ChildAllergen(Base):
+    __tablename__ = 'child_allergens'
+    child_id = Column(Integer, ForeignKey('children.id'), primary_key=True)
+    ingredient_id = Column(Integer, ForeignKey('ingredients.id'), primary_key=True)
+    # Отношения
+    # child = relationship("Child", back_populates="allergens")
+    # ingredient = relationship("Ingredient", back_populates="child_allergens")
+
+class Ingredient(Base):
+    __tablename__ = 'ingredients'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String, nullable=False)
+    is_allergen = Column(Boolean, default=False)
+    # Обратные отношения
+    # child_allergens = relationship("ChildAllergen", back_populates="ingredient")
+    children = relationship("Child", secondary="child_allergens", back_populates="allergens")
+    recipe_ingredients = relationship("RecipeIngredient", back_populates="ingredient")
+
     def __repr__(self):
-        return f"<Child(id={self.id}, name={self.name}, user_id={self.user_id})>"
+        return f"<Ingredient(id={self.id}, name={self.name}, is_allergen={self.is_allergen})>"
 
 # Таблица recipes
 class Recipe(Base):
@@ -92,18 +114,7 @@ class Recipe(Base):
     def __repr__(self):
         return f"<Recipe(id={self.id}, name={self.name}, user_id={self.user_id})>"
 
-# Таблица ingredients
-class Ingredient(Base):
-    __tablename__ = 'ingredients'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String, nullable=False)
-    is_allergen = Column(Boolean, default=False)
 
-    # Связи
-    recipe_ingredients = relationship("RecipeIngredient", back_populates="ingredient")
-
-    def __repr__(self):
-        return f"<Ingredient(id={self.id}, name={self.name})>"
 
 # Таблица recipe_ingredients
 class RecipeIngredient(Base):

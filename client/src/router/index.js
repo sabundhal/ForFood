@@ -7,6 +7,7 @@ import CalculationHistory from '../components/CalculationHistory.vue';
 import TokenHandler from '../components/TokenHandler.vue';
 import AuthButtons from '../components/AuthButtons.vue';
 import Article from '../components/Article.vue';
+import Profile from '../components/Profile.vue';
 
 const routes = [
   {
@@ -22,6 +23,16 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: Login
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: Register
+  },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: Profile
   },
   {
     path: '/tokenhandler',
