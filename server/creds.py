@@ -9,6 +9,9 @@ VALIDATORS = {
 }
 
 # Загрузите Client Secret из переменных окружения
+JWT_SECRET_KEY_VALUE = '6eac08dd7b367838734720a99431fa01a4e7f550f265feb4'
+#secret_key = os.urandom(24).hex()
+#print(secret_key)
 CLIENT_ID = os.getenv("YANDEX_CLIENT_ID")
 CLIENT_SECRET = os.getenv("YANDEX_CLIENT_SECRET")
 

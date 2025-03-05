@@ -130,27 +130,16 @@ export default {
     },
 
     sendTokenToServer(token) {
+
   axios.post('/api/auth/yandex', { token: token })
     .then(response => {
       console.log('Ответ от бекенда:', response.data);
       // Извлекаем данные пользователя
-      const user = response.data.user;
-      const user_id = user.id; // Извлекаем user_id
+      const user_id = response.data.user_id;
+      const access_token = response.data.access_token;
       // Сохраняем токен и данные пользователя в localStorage
-       // Проверки
-        if (!user) {
-          throw new Error('Данные пользователя не найдены в ответе Яндекса');
-        }
 
-        const user_name = user.login;
-
-        if (!user_name) {
-          throw new Error('Логин пользователя не найден в ответе Яндекса');
-        }
-
-        // Сохраняем данные
-       localStorage.setItem('access_token', token);
-      localStorage.setItem('user_name', user_name);
+      localStorage.setItem('access_token', access_token);
       localStorage.setItem('user_id', user_id);
 
       // Закрываем окно только после успешного завершения
@@ -228,7 +217,7 @@ export default {
         const token = event.data.token;
         console.log('Токен получен во всплывающем окне:', token);
         // Сохраняем токен и перенаправляем пользователя
-        localStorage.setItem('access_token', token);
+        localStorage.setItem('yandex_token', token);
           // Вызываем sendTokenToServer в основном окне
       this.sendTokenToServer(token);
         this.$router.push({ name: 'Main' });

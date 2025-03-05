@@ -53,8 +53,10 @@ class UserManager:
         session = self.db_manager.get_session()
         try:
             user = session.query(User).filter(User.id == user_id).one()
+            print(f" get_user_by_id информация о юзере: {user}")  # Логируем введенные данные
             return user
         except NoResultFound:
+            print(f" get_user_by_id не найден юзер:")
             return None
         except Exception as e:
             logging.error(f"Error fetching user: {e}")
@@ -81,8 +83,11 @@ class UserManager:
     def authenticate_user(self, username, password):
         session = self.db_manager.get_session()
         try:
-            hashed_password = hashlib.sha256(password.encode()).hexdigest()
+            hashed_password = hashlib.sha256(password.encode('utf-8')).hexdigest()
+            print(f"Hashed password: {hashed_password}")  # Логируем хешированный пароль
             user = session.query(User).filter_by(username=username, password=hashed_password).first()
+            if not user:
+                print("User not found")  # Логируем, если пользователь не найден
             return user
         finally:
             session.close()

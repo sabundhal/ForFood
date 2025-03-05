@@ -81,7 +81,7 @@ def login_user():
         data = request.get_json()
         username = data.get('username')
         password = data.get('password')
-
+        print(f"Username: {username}, Password: {password}")  # Логируем введенные данные
         if not username or not password:
             return jsonify({'message': 'Username and password are required'}), 400
 
@@ -90,7 +90,7 @@ def login_user():
             return jsonify({'message': 'Неверные учетные данные'}), 401
 
         # Получаем user_id
-        user_id = user.id
+        user_id = str(user.id)
         access_token = create_access_token(identity=user_id)  # Генерация токена
 
         # Возвращаем токен и user_id
@@ -109,7 +109,7 @@ def handle_yandex_auth():
         return jsonify({"error": "Токен отсутствует"}), 400
     try:
         # Получаем данные пользователя
-        user_info = get_user_info(token)
+        user_info = get_yandex_user_info(token)
         yandex_id = user_info["id"]  # Уникальный ID Яндекса
         # Проверяем, есть ли пользователь в БД
         user = user_manager.get_user_by_yandex_id(yandex_id)
@@ -122,7 +122,10 @@ def handle_yandex_auth():
             new_user = user_manager.create_user(username, email, hashed_password, is_yandex=1, yandex_id=yandex_id)
             # Получаем только что созданного пользователя
             user = user_manager.get_user_by_yandex_id(yandex_id)
-        return jsonify({"success": True, "user": user_info})
+        # Генерация JWT-токена
+        print(f"Юзер в яндексе: {user.id}")  # Логируем введенные данные
+        access_token = create_access_token(identity=str(user.id))  # Используем user.id как identity
+        return jsonify(access_token=access_token, user_id=user.id), 200
     except IntegrityError as e:
         logging.error(f"IntegrityError: {e}")
         return jsonify({"error": "Ошибка базы данных: пользователь уже существует"}), 500
@@ -131,7 +134,7 @@ def handle_yandex_auth():
         return jsonify({"error": str(e)}), 500
 
 
-def get_user_info(token):
+def get_yandex_user_info(token):
     url = "https://login.yandex.ru/info"
     headers = {"Authorization": f"OAuth {token}"}
     params = {
@@ -149,6 +152,7 @@ def get_user_info(token):
 @jwt_required()  # Проверка токена
 def get_user_info():
     user_id = get_jwt_identity()  # Получаем ID пользователя из токена
+    print(f" get_user_info user_id: {user_id}")  # Логируем введенные данные
     db_manager = DatabaseManager()  # Создаем экземпляр DatabaseManager
     user_manager = UserManager(db_manager)  # Передаем его в UserManager
 
@@ -378,7 +382,8 @@ if __name__ == '__main__':
     Swagger(app, template_file='swagger.yaml')
 
     # Настройка JWT
-    app.config['JWT_SECRET_KEY'] = 'your-secret-key'  # Замените 'your-secret-key' на ваш секретный ключ
+    app.config['JWT_SECRET_KEY'] = '6eac08dd7b367838734720a99431fa01a4e7f550f265feb4'  # Замените 'your-secret-key' на ваш секретный ключ
+
     jwt = JWTManager(app)
     # Настройка CORS
     CORS(app)
