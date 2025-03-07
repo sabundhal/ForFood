@@ -92,104 +92,169 @@ class UserManager:
         finally:
             session.close()
 
-# class ChildManager:
-#     def __init__(self, db_manager):
-#         self.db_manager = db_manager
-#
-#     def create_child(self, user_id: int, name: str, birth_date: str, gender: str, height: float, weight: float,
-#                      allergens: list):
-#         session = self.db_manager.get_session()
-#         try:
-#             # Преобразуем строку даты в объект date
-#             from datetime import datetime
-#             birth_date = datetime.strptime(birth_date, '%Y-%m-%d').date()
-#
-#             # Создаем объект ребенка
-#             child = Child(
-#                 user_id=user_id,
-#                 name=name,
-#                 birth_date=birth_date,
-#                 gender=gender,
-#                 height=height,
-#                 weight=weight
-#             )
-#             session.add(child)
-#             session.flush()  # Сохраняем ребенка, чтобы получить его ID, но не фиксируем транзакцию
-#
-#             # Привязываем аллергены к ребенку
-#             for allergen_id in allergens:
-#                 # Проверяем, существует ли аллерген
-#                 allergen = session.query(Ingredient).get(allergen_id)
-#                 if not allergen:
-#                     raise ValueError(f"Аллерген с ID {allergen_id} не найден")
-#                 child_allergen = ChildAllergen(child_id=child.id, ingredient_id=allergen_id)
-#                 session.add(child_allergen)
-#
-#             session.commit()  # Фиксируем все изменения
-#             session.refresh(child)  # Обновляем объект child
-#             return child
-#         except IntegrityError as e:
-#             session.rollback()
-#             logging.error(f"IntegrityError: {e}")
-#             raise
-#         except Exception as e:
-#             session.rollback()
-#             logging.error(f"Error creating child: {e}")
-#             raise
-#         finally:
-#             session.close()
-#
-#
-#
-#     def get_all_children_for_user(self, user_id: int):
-#         """
-#         Возвращает всех детей для указанного пользователя.
-#         :param user_id: ID пользователя.
-#         :return: Список детей.
-#         """
-#         session = self.db_manager.get_session()
-#         try:
-#             children = (
-#                 session.query(Child)
-#                 .options(joinedload(Child.allergens))  # Загружаем аллергены
-#                 .filter(Child.user_id == user_id)
-#                 .all()
-#             )
-#             return children
-#         except Exception as e:
-#             logging.error(f"Error fetching children: {e}")
-#             raise
-#         finally:
-#             session.close()
-#
-#     from sqlalchemy.orm import joinedload
-#
-#     def get_child_by_id(self, user_id: int, child_id: int):
-#         """
-#         Возвращает ребенка по ID, если он принадлежит указанному пользователю.
-#         :param user_id: ID пользователя.
-#         :param child_id: ID ребенка.
-#         :return: Ребенок или None, если не найден.
-#         """
-#         session = self.db_manager.get_session()
-#         try:
-#             child = (
-#                 session.query(Child)
-#                 .options(joinedload(Child.allergens))  # Загружаем аллергены
-#                 .filter(
-#                     Child.id == child_id,
-#                     Child.user_id == user_id
-#                 )
-#                 .first()
-#             )
-#             return child
-#         except Exception as e:
-#             logging.error(f"Error fetching child: {e}")
-#             raise
-#         finally:
-#             session.close()
+class ChildManager:
+    def __init__(self, db_manager):
+        self.db_manager = db_manager
+
+    def create_child(self, user_id: int, name: str, birth_date: str, gender: str, height: float, weight: float,
+                     allergens: list = None):  # allergens теперь необязательный параметр
+        session = self.db_manager.get_session()
+        try:
+            # Преобразуем строку даты в объект date (если birth_date - строка)
+            if isinstance(birth_date, str):
+                birth_date = datetime.strptime(birth_date, '%Y-%m-%d').date()
+
+            # Создаем объект ребенка
+            child = Child(
+                user_id=user_id,
+                name=name,
+                birth_date=birth_date,
+                gender=gender,
+                height=height,
+                weight=weight
+            )
+            session.add(child)
+            session.flush()  # Сохраняем ребенка, чтобы получить его ID, но не фиксируем транзакцию
+
+            # Привязываем аллергены к ребенку (если они есть)
+            if allergens:  # Проверяем, что allergens не None и не пустой список
+                for allergen_id in allergens:
+                    # Проверяем, существует ли аллерген
+                    allergen = session.query(Ingredient).get(allergen_id)
+                    if not allergen:
+                        raise ValueError(f"Аллерген с ID {allergen_id} не найден")
+                    child_allergen = ChildAllergen(child_id=child.id, ingredient_id=allergen_id)
+                    session.add(child_allergen)
+
+            session.commit()  # Фиксируем все изменения
+            session.refresh(child)  # Обновляем объект child
+            return child
+        except IntegrityError as e:
+            session.rollback()
+            logging.error(f"IntegrityError: {e}")
+            raise
+        except Exception as e:
+            session.rollback()
+            logging.error(f"Error creating child: {e}")
+            raise
+        finally:
+            session.close()
 
 
+
+    def get_all_children_for_user(self, user_id: int):
+        """Возвращает всех детей для указанного пользователя.
+        :param user_id: ID пользователя.
+        :return: Список детей."""
+        session = self.db_manager.get_session()
+        try:
+            children = (
+                session.query(Child)
+                .options(joinedload(Child.allergens))  # Загружаем аллергены
+                .filter(Child.user_id == user_id)
+                .all()
+            )
+            return children
+        except Exception as e:
+            logging.error(f"Error fetching children: {e}")
+            raise
+        finally:
+            session.close()
+
+    from sqlalchemy.orm import joinedload
+
+    def get_child_by_id(self, user_id: int, child_id: int):
+        """
+        Возвращает ребенка по ID, если он принадлежит указанному пользователю.
+        :param user_id: ID пользователя.
+        :param child_id: ID ребенка.
+        :return: Ребенок или None, если не найден.
+        """
+        session = self.db_manager.get_session()
+        try:
+            child = (
+                session.query(Child)
+                .options(joinedload(Child.allergens))  # Загружаем аллергены
+                .filter(
+                    Child.id == child_id,
+                    Child.user_id == user_id
+                )
+                .first()
+            )
+            return child
+        except Exception as e:
+            logging.error(f"Error fetching child: {e}")
+            raise
+        finally:
+            session.close()
+
+    def update_child(self, child_id, name, birth_date, gender, height, weight, allergens):
+        """
+        Обновляет данные ребенка.
+        :param child_id: ID ребенка.
+        :param name: Имя ребенка.
+        :param birth_date: Дата рождения.
+        :param gender: Пол.
+        :param height: Рост.
+        :param weight: Вес.
+        :param allergens: Список аллергенов.
+        :return: Обновленный ребенок или None, если ребенок не найден.
+        """
+        session = self.db_manager.get_session()
+        try:
+            # Получаем ребенка по ID
+            child = (
+                session.query(Child)
+                .options(joinedload(Child.allergens))  # Загружаем аллергены
+                .filter(Child.id == child_id)
+                .first()
+            )
+            if not child:
+                return None
+
+            # Обновляем данные ребенка
+            child.name = name
+            child.birth_date = birth_date
+            child.gender = gender
+            child.height = height
+            child.weight = weight
+            child.allergens = allergens
+
+            # Сохраняем изменения в базе данных
+            session.commit()
+
+            # Обновляем объект, чтобы получить актуальные данные
+            session.refresh(child)
+            return child
+        except Exception as e:
+            logging.error(f"Error updating child: {e}")
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+    def delete_child(self, child_id):
+        """
+        Удаляет ребенка по ID.
+        :param child_id: ID ребенка.
+        :return: True, если ребенок удален, иначе False.
+        """
+        session = self.db_manager.get_session()
+        try:
+            # Получаем ребенка по ID
+            child = session.query(Child).filter(Child.id == child_id).first()
+            if not child:
+                return False
+            # Удаляем ребенка
+            session.delete(child)
+            session.commit()
+            return True
+        except Exception as e:
+            logging.error(f"Error deleting child: {e}")
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
 
 # # Инициализация базы данных

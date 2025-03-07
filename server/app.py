@@ -14,7 +14,9 @@ from antipyretic_calculator import calculateAntipyreticDosage
 from creds import *
 from data import *
 from sqlalchemy.exc import IntegrityError
-from database import DatabaseManager  # Импортируйте ваш класс DatabaseManager
+from database import DatabaseManager
+
+# Импортируйте ваш класс DatabaseManager
 from models import Base  # Импортируйте Base из models.py
 
 db_manager = DatabaseManager()  # Создайте экземпляр DatabaseManager
@@ -174,89 +176,140 @@ def get_user_info():
         return jsonify({'message': 'Database error', 'details': str(e)}), 500
 
 
-# @app.route('/api/children', methods=['POST'])
-# def create_child_profile():
-#     db_manager = DatabaseManager()  # Создайте экземпляр DatabaseManager
-#     child_manager = ChildManager(db_manager)  # Передайте его в ChildManager
-#     try:
-#         # Получаем данные из запроса
-#         data = request.json
-#         # Валидация данных с помощью Pydantic
-#         child_data = ChildCreate(**data)
-#
-#         # Извлекаем user_id и аллергенов из запроса
-#         user_id = request.json.get('user_id')
-#         allergens = request.json.get('allergens', [])
-#
-#         # Создание нового профиля ребенка
-#         new_child = child_manager.create_child(
-#             user_id=user_id,
-#             name=child_data.name,
-#             birth_date=child_data.birth_date,
-#             gender=child_data.gender,
-#             height=child_data.height,
-#             weight=child_data.weight,
-#             allergens=allergens
-#         )
-#         return jsonify({'message': 'Профиль ребенка создан успешно', 'child_id': new_child.id}), 201
-#     except ValidationError as e:
-#         logging.error(f"Validation error: {e}")  # Логируем ошибку валидации
-#         return jsonify({'message': 'Ошибка валидации', 'details': e.errors()}), 400
-#     except Exception as e:
-#         logging.error(f"Error creating child profile: {e}")  # Логируем ошибку
-#         return jsonify({'message': 'Ошибка базы данных', 'details': str(e)}), 500
-#
-#
-# @app.route('/api/children', methods=['GET'])
-# @jwt_required()
-# def get_all_children():
-#     user_id = get_jwt_identity()  # Получаем ID пользователя из токена
-#     db_manager = DatabaseManager()  # Создаем экземпляр DatabaseManager
-#     child_manager = ChildManager(db_manager)  # Передаем его в ChildManager
-#
-#     try:
-#         children = child_manager.get_all_children_for_user(user_id)  # Используем метод из ChildManager
-#         # Преобразуем объекты Child в словари для JSON
-#         children_data = [{
-#             "id": child.id,
-#             "name": child.name,
-#             "birth_date": child.birth_date.isoformat(),
-#             "gender": child.gender,
-#             "height": child.height,
-#             "weight": child.weight,
-#             "allergens": [{"id": allergen.id, "name": allergen.name} for allergen in child.allergens]
-#         } for child in children]
-#         return jsonify(children_data), 200
-#     except Exception as e:
-#         return jsonify({'message': 'Database error', 'details': str(e)}), 500
-#
-# @app.route('/api/children/<int:child_id>', methods=['GET'])
-# @jwt_required()
-# def get_child(child_id: int):
-#     user_id = get_jwt_identity()  # Получаем ID пользователя из токена
-#     db_manager = DatabaseManager()  # Создаем экземпляр DatabaseManager
-#     child_manager = ChildManager(db_manager)  # Передаем его в ChildManager
-#
-#     try:
-#         child = child_manager.get_child_by_id(user_id, child_id)  # Используем метод из ChildManager
-#         if not child:
-#             return jsonify({'message': 'Ребенок не найден'}), 404
-#
-#         # Преобразуем объект Child в словарь для JSON
-#         child_data = {
-#             "id": child.id,
-#             "name": child.name,
-#             "birth_date": child.birth_date.isoformat(),
-#             "gender": child.gender,
-#             "height": child.height,
-#             "weight": child.weight,
-#             "allergens": [{"id": allergen.id, "name": allergen.name} for allergen in child.allergens]
-#         }
-#         return jsonify(child_data), 200
-#     except Exception as e:
-#         return jsonify({'message': 'Database error', 'details': str(e)}), 500
-#
-#
+@app.route('/api/children', methods=['POST'])
+def create_child_profile():
+    db_manager = DatabaseManager()  # Создайте экземпляр DatabaseManager
+    child_manager = ChildManager(db_manager)  # Передайте его в ChildManager
+    try:
+        # Получаем данные из запроса
+        data = request.json
+        # Валидация данных с помощью Pydantic
+        child_data = ChildCreate(**data)
+
+        # Извлекаем user_id и аллергенов из запроса
+        user_id = request.json.get('user_id')
+        allergens = request.json.get('allergens', [])
+
+        # Создание нового профиля ребенка
+        new_child = child_manager.create_child(
+            user_id=user_id,
+            name=child_data.name,
+            birth_date=child_data.birth_date,
+            gender=child_data.gender,
+            height=child_data.height,
+            weight=child_data.weight,
+            allergens=allergens
+        )
+        return jsonify({'message': 'Профиль ребенка создан успешно', 'child_id': new_child.id}), 201
+    except ValidationError as e:
+        logging.error(f"Validation error: {e}")  # Логируем ошибку валидации
+        return jsonify({'message': 'Ошибка валидации', 'details': e.errors()}), 400
+    except Exception as e:
+        logging.error(f"Error creating child profile: {e}")  # Логируем ошибку
+        return jsonify({'message': 'Ошибка базы данных', 'details': str(e)}), 500
+
+
+@app.route('/api/children', methods=['GET'])
+@jwt_required()
+def get_all_children():
+    user_id = get_jwt_identity()  # Получаем ID пользователя из токена
+    print(f" get_all_children user_id: {user_id}")  # Логируем введенные данные
+    db_manager = DatabaseManager()  # Создаем экземпляр DatabaseManager
+    child_manager = ChildManager(db_manager)  # Передаем его в ChildManager
+
+    try:
+        children = child_manager.get_all_children_for_user(user_id)  # Используем метод из ChildManager
+        # Преобразуем объекты Child в словари для JSON
+        children_data = [{
+            "id": child.id,
+            "name": child.name,
+            "birth_date": child.birth_date.isoformat(),
+            "gender": child.gender,
+            "height": child.height,
+            "weight": child.weight,
+            "allergens": [{"id": allergen.id, "name": allergen.name} for allergen in child.allergens]
+        } for child in children]
+        return jsonify(children_data), 200
+    except Exception as e:
+        return jsonify({'message': 'Database error', 'details': str(e)}), 500
+
+@app.route('/api/children/<int:child_id>', methods=['GET'])
+@jwt_required()
+def get_child(child_id: int):
+    user_id = get_jwt_identity()  # Получаем ID пользователя из токена
+    db_manager = DatabaseManager()  # Создаем экземпляр DatabaseManager
+    child_manager = ChildManager(db_manager)  # Передаем его в ChildManager
+
+    try:
+        child = child_manager.get_child_by_id(user_id, child_id)  # Используем метод из ChildManager
+        if not child:
+            return jsonify({'message': 'Ребенок не найден'}), 404
+
+        # Преобразуем объект Child в словарь для JSON
+        child_data = {
+            "id": child.id,
+            "name": child.name,
+            "birth_date": child.birth_date.isoformat(),
+            "gender": child.gender,
+            "height": child.height,
+            "weight": child.weight,
+            "allergens": [{"id": allergen.id, "name": allergen.name} for allergen in child.allergens]
+        }
+        return jsonify(child_data), 200
+    except Exception as e:
+        return jsonify({'message': 'Database error', 'details': str(e)}), 500
+
+
+
+@app.route('/api/children/<int:child_id>', methods=['PUT'])
+def update_child_profile(child_id):
+    db_manager = DatabaseManager()  # Создаем экземпляр DatabaseManager
+    child_manager = ChildManager(db_manager)  # Передаем его в ChildManager
+    try:
+        # Получаем данные из запроса
+        data = request.json
+        # Валидация данных с помощью Pydantic
+        child_data = ChildCreate(**data)
+
+        # Извлекаем аллергены из запроса
+        allergens = request.json.get('allergens', [])
+
+        # Обновление профиля ребенка
+        updated_child = child_manager.update_child(
+            child_id=child_id,
+            name=child_data.name,
+            birth_date=child_data.birth_date,
+            gender=child_data.gender,
+            height=child_data.height,
+            weight=child_data.weight,
+            allergens=allergens
+        )
+        if not updated_child:
+            return jsonify({'message': 'Ребенок не найден'}), 404
+
+        return jsonify({'message': 'Профиль ребенка обновлен успешно', 'child_id': updated_child.id}), 200
+    except ValidationError as e:
+        logging.error(f"Validation error: {e}")  # Логируем ошибку валидации
+        return jsonify({'message': 'Ошибка валидации', 'details': e.errors()}), 400
+    except Exception as e:
+        logging.error(f"Error updating child profile: {e}")  # Логируем ошибку
+        return jsonify({'message': 'Ошибка базы данных', 'details': str(e)}), 500
+
+
+@app.route('/api/children/<int:child_id>', methods=['DELETE'])
+def delete_child_profile(child_id):
+    db_manager = DatabaseManager()  # Создаем экземпляр DatabaseManager
+    child_manager = ChildManager(db_manager)  # Передаем его в ChildManager
+    try:
+        # Удаление профиля ребенка
+        deleted = child_manager.delete_child(child_id)
+        if not deleted:
+            return jsonify({'message': 'Ребенок не найден'}), 404
+
+        return jsonify({'message': 'Профиль ребенка удален успешно'}), 200
+    except Exception as e:
+        logging.error(f"Error deleting child profile: {e}")  # Логируем ошибку
+        return jsonify({'message': 'Ошибка базы данных', 'details': str(e)}), 500
 
 
 
